@@ -11,6 +11,5 @@ def generateRsaKeypair(privKeyTargetPath: str, pubKeyTargetPath: str):
     f = open(privKeyTargetPath, 'wb')
     f.write(privKeyPEM)
     f.close()
-    return keyPair
 
 
