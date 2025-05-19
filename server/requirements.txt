@@ -1,3 +1,4 @@
 flask
 waitress
 pycryptodome
+pytest

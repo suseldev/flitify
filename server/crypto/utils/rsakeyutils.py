@@ -12,4 +12,9 @@ def generateRsaKeypair(privKeyTargetPath: str, pubKeyTargetPath: str):
     f.write(privKeyPEM)
     f.close()
 
+def loadKeyFromFile(pubKeyFilePath: str) -> bytes:
+    keyF = open(pubKeyFilePath, 'rb')
+    key = RSA.importKey(keyF.read())
+    keyF.close()
+    return key
 
