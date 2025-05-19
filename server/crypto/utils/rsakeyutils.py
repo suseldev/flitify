@@ -4,7 +4,7 @@ def generateRsaKeypair(privKeyTargetPath: str, pubKeyTargetPath: str):
     keyPair = RSA.generate(4096)
     pubKey = keyPair.publickey()
     pubKeyPEM = pubKey.exportKey()
-    f = open(privKeyTargetPath, 'wb')
+    f = open(pubKeyTargetPath, 'wb')
     f.write(pubKeyPEM)
     f.close()
     privKeyPEM = keyPair.exportKey()
