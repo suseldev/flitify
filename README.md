@@ -26,6 +26,7 @@ It is developed with security in mind, encrypting all communication between clie
 
 ## Testing
 Run automated tests using pytest:
+
     ```bash
     cd server/
     python3 -m pytest tests/
