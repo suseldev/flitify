@@ -1,5 +1,5 @@
 # Flitify
-**EARLY VERSION, ONLY BASICS ARE IMPLEMENTED FOR NOW!**
+**EARLY (UNUSABLE) VERSION, ONLY BASICS ARE IMPLEMENTED FOR NOW!**
 
 Flitify **will be** a secure remote computer management tool with a modern web interface.
 
