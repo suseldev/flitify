@@ -5,6 +5,8 @@ from crypto import cryptohelper
 
 import socket
 
+import constants
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
@@ -13,6 +15,9 @@ logging.basicConfig(
 
 
 MESSAGE_SIZE = 8192
+
+class ProtocolVersionError(Exception):
+    pass
 
 class SecureConnection(BaseConnection):
     """
@@ -29,7 +34,6 @@ class SecureConnection(BaseConnection):
         self.MESSAGE_SIZE = MESSAGE_SIZE
         self.rsa = cryptohelper.CryptoHelperRSA(rsaKey)
         self.aes = None
-        #self.socket.settimeout(1.0)
         self._performKeyExchange()
 
     def _performKeyExchange(self):
@@ -76,6 +80,9 @@ class ServerSecureConnection(SecureConnection):
     def _performKeyExchange(self):
         """ Refer to base class documentation. """
         try:
+            protocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
+            self.sendRaw(protocolMsg.encode())
+            logging.debug(f'{self.peerAddr}: Greeting sent: {protocolMsg}')
             encMsg = self.recvRaw(MESSAGE_SIZE)
             aesKey = self.rsa.decrypt(encMsg)
             self.aes = cryptohelper.CryptoHelperAES(aesKey)
@@ -88,10 +95,13 @@ class ServerSecureConnection(SecureConnection):
         except ValueError as e:
             logging.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
             self.closeConnection()
+            raise
         except BrokenPipeError:
             logging.warning(f"{self.peerAddr}: Connection broken during key exchange")
+            raise
         except socket.timeout:
             logging.warning(f"{self.peerAddr}: Socket timed out during key exchange")
+            raise
 
 class ClientSecureConnection(SecureConnection):
     """
@@ -108,6 +118,11 @@ class ClientSecureConnection(SecureConnection):
     def _performKeyExchange(self):
         """ Refer to base class documentation. """
         try:
+            protocolMsg = self.recvRaw(MESSAGE_SIZE).decode()
+            logging.debug(f'{self.peerAddr}: Greeting recieved from server: {protocolMsg}')
+            myProtocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
+            if protocolMsg != myProtocolMsg:
+                raise ProtocolVersionError(f"My version is: {constants.PROTOCOL_VERSION}, server sent: {protocolMsg}")
             self.aes = cryptohelper.CryptoHelperAES()
             aesKey = self.aes.key
             encMsg = self.rsa.encrypt(aesKey)
@@ -119,9 +134,16 @@ class ClientSecureConnection(SecureConnection):
             self.sendEncrypted(b'HNDSHK_PONG')
             logging.info(f"{self.peerAddr}: Client handshake finished")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")
+            logging.error(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")
             self.closeConnection()
+            raise
         except BrokenPipeError:
-            logging.warning(f"{self.peerAddr}: Connection broken by server during handshake!")
+            logging.warning(f"{self.peerAddr}: Connection broken by server during handshake")
+            raise
+        except ProtocolVersionError as e:
+            logging.error(f"{self.peerAddr}: Protocol mismatch: {e}")
+            self.closeConnection()
+            raise
         except socket.timeout:
-            logging.warning(f"{self.peerAddr}: Client socket timed out during key exchange")
+            logging.error(f"{self.peerAddr}: Client socket timed out during key exchange")
+            raise
