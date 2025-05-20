@@ -1,9 +1,6 @@
 import struct
 import logging
 
-class ProtocolConnectionError(Exception):
-    pass
-
 class BaseConnection:
     """
     Basic connection wrapper for socket communication.
@@ -35,6 +32,8 @@ class BaseConnection:
         Raises:
             BrokenPipeError: if the connection is closed during sending
         """
+        if not self.running:
+            raise BrokenPipeError("attempted to send on a closed connection")
         try:
             self.socket.sendall(data)
         except BrokenPipeError:
@@ -55,6 +54,8 @@ class BaseConnection:
         Raises:
             BrokenPipeError: If the connection is closed by the peer
         """
+        if not self.running:
+            raise BrokenPipeError("attempted to recv on a closed connection")
         data = self.socket.recv(size)
         if not data:
             self.closeConnection()

@@ -3,6 +3,8 @@ import logging
 from network.baseconnection import BaseConnection
 from crypto import cryptohelper
 
+import socket
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] [%(levelname)s] %(message)s',
@@ -24,11 +26,13 @@ class SecureConnection(BaseConnection):
 
     def __init__(self, socket, peerAddr, rsaKey):
         super().__init__(socket, peerAddr)
+        self.MESSAGE_SIZE = MESSAGE_SIZE
         self.rsa = cryptohelper.CryptoHelperRSA(rsaKey)
         self.aes = None
+        #self.socket.settimeout(1.0)
         self._performKeyExchange()
 
-    def _performKeyExchange():
+    def _performKeyExchange(self):
         """ Performs AES key exchange using RSA encryption. """
         raise NotImplementedError()
 
@@ -82,10 +86,12 @@ class ServerSecureConnection(SecureConnection):
                 raise ValueError(f'Incorrect handshake message: {testMsg}')
             logging.info(f"{self.peerAddr}: Handshake finished")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: Unexpected data format during handshake, closing connection: {e}")
+            logging.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
             self.closeConnection()
         except BrokenPipeError:
-            logging.warning(f"{self.peerAddr}: Connection broken during handshake!")
+            logging.warning(f"{self.peerAddr}: Connection broken during key exchange")
+        except socket.timeout:
+            logging.warning(f"{self.peerAddr}: Socket timed out during key exchange")
 
 class ClientSecureConnection(SecureConnection):
     """
@@ -111,9 +117,11 @@ class ClientSecureConnection(SecureConnection):
             if testMsg != b'HNDSHK_PING':
                 raise ValueError('Incorrect handshake message: {testMsg}')
             self.sendEncrypted(b'HNDSHK_PONG')
-            logging.info(f"{self.peerAddr}: Handshake finished")
+            logging.info(f"{self.peerAddr}: Client handshake finished")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: Unexpected data format during handshake, closing connection: {e}")
+            logging.warning(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")
             self.closeConnection()
         except BrokenPipeError:
-            logging.warning(f"{self.peerAddr}: Connection broken during handshake!")
+            logging.warning(f"{self.peerAddr}: Connection broken by server during handshake!")
+        except socket.timeout:
+            logging.warning(f"{self.peerAddr}: Client socket timed out during key exchange")
