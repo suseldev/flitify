@@ -26,7 +26,7 @@ It is developed with security in mind, encrypting all communication between clie
 
 4. Generate the keys:
    ```
-   python3 app/utils/rsakeygen.py <path to save rsa keys>
+   python3 app/crypto/utils/rsakeygen.py <path to save rsa keys>
    ```
 
 5. Configure server and client apps:
