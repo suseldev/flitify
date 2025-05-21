@@ -15,8 +15,9 @@ class ClientThread(threading.Thread):
         super().__init__()
 
     def run(self):
-        logging.debug(f'{peerAddr}: starting thread')
-        self.client = ClientHandler(self.socket, self.peerAddr, self.rsaKey, self.dbHandler)
+        logging.debug(f'{self.peerAddr[0]}:{self.peerAddr[1]}: starting thread')
+        self.connection = ServerProtocolConnection(self.socket, self.peerAddr, self.rsaKey, self.dbHandler)
+        self.client = ClientHandler(self.connection)
         self.client.ping()
         print(f'Status: {self.client.getStatus()}')
 

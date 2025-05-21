@@ -1,3 +1,5 @@
+import logging
+
 from network.protocolconnection import ClientProtocolConnection
 
 class ClientConnection():
@@ -8,12 +10,14 @@ class ClientConnection():
     def _actionLoop(self):
         while True:
             if not self.connection.running:
-                self.logging.info(f'{self.connection.peerAddr}: connection closed during actionLoop')
+                logging.error(f'{self.connection.peerAddr}: connection closed during actionLoop')
                 break
             command, commandData = self.connection.recvAction()
+            logging.debug(f'{self.connection.peerAddr}: received command {command}')
             match command:
                 case 'ping':
                     self.connection.sendResponse('pong', {})
                 case 'get_status':
+                    status_dict = {'cpu': 36, 'ram': 48}
                     self.connection.sendResponse('status', status_dict)
 

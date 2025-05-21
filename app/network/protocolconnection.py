@@ -3,8 +3,8 @@ from storage.dbhandler import DBHandler
 import constants
 
 import logging
-import abc
 import json
+import threading
 
 class AuthenticationError(Exception):
     pass
@@ -15,25 +15,28 @@ class ServerProtocolConnection(ServerSecureConnection):
         super().__init__(socket, peerAddr, rsaKey)
         self.db = dbHandler
         self.clientId = None
+        self.sendLock = threading.Lock()
         self._beginHandshake()
 
+
     def invokeAction(self, actionType: str, actionData: dict):
-        payload = {
-                "type": actionType,
-                "data": actionData
-        }
-        jsonPayload = json.dumps(payload).encode()
-        self.sendEncryptedLarge(jsonPayload)
-        try:
-            response = self.recvEncryptedLarge()
-            response = json.loads(response)
-            if 'type' not in response or 'data' not in response:
-                raise ValueError("'type' or 'data' field not found in response")
-            return response['type'], response['data']
-        except json.JSONDecodeError:
-            logging.warning("{self.peerAddr} ({self.clientId}): client sent invalid json")
-        except ValueError as e:
-            logging.warning("{self.peerAddr} ({self.clientId}): client sent invalid action response: {e}")
+        with self.sendLock:
+            payload = {
+                    "type": actionType,
+                    "data": actionData
+            }
+            jsonPayload = json.dumps(payload).encode()
+            self.sendEncryptedLarge(jsonPayload)
+            try:
+                response = self.recvEncryptedLarge()
+                response = json.loads(response)
+                if 'type' not in response or 'data' not in response:
+                    raise ValueError("'type' or 'data' field not found in response")
+                return response['type'], response['data']
+            except json.JSONDecodeError:
+                logging.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid json")
+            except ValueError as e:
+                logging.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid action response: {e}")
 
 
 
