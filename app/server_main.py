@@ -2,6 +2,14 @@ import config
 from server.flitifyserver import FlitifyServer
 from storage.dbhandler import DBHandler
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+
+
 def startFlitifyServer():
     servConfig = config.loadServerConfig()
     host = servConfig['host']

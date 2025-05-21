@@ -5,6 +5,14 @@ import config
 from client.clientconnection import ClientConnection
 from network.protocolconnection import ClientProtocolConnection
 
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='[%(asctime)s] [%(levelname)s] %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
+)
+
+
+
 def main():
     # load config and key
     clientConfig = config.loadClientConfig()

@@ -32,6 +32,8 @@ class ServerProtocolConnection(ServerSecureConnection):
                 response = json.loads(response)
                 if 'type' not in response or 'data' not in response:
                     raise ValueError("'type' or 'data' field not found in response")
+                if response['type'] == 'invalid_action':
+                    raise ValueError("client sent 'invalid_action'")
                 return response['type'], response['data']
             except json.JSONDecodeError:
                 logging.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid json")
