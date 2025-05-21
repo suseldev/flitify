@@ -24,6 +24,21 @@ It is developed with security in mind, encrypting all communication between clie
     python3 -m pip install -r app/requirements.txt
     ```
 
+4. Generate the keys:
+   ```
+   python3 app/utils/rsakeygen.py <path to save rsa keys>
+   ```
+
+5. Configure server and client apps:
+   ```
+   <config not implemented yet>
+   ```
+   
+6. Start the Flitify server:
+   ```
+   python3 app/server_main.py
+   ```
+
 ## Testing
 Run automated tests using pytest:
 
