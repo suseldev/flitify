@@ -43,7 +43,7 @@ It is developed with security in mind, encrypting all communication between clie
 Run automated tests using pytest:
 
 ``` bash
-cd server/
+cd app/
 python3 -m pytest tests/
 ```
 
