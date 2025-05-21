@@ -1,6 +1,8 @@
 import struct
 import logging
 
+import constants
+
 class BaseConnection:
     """
     Basic connection wrapper for socket communication.
@@ -62,4 +64,29 @@ class BaseConnection:
             logging.debug(f"{self.peerAddr}: connection closed during recvRaw")
             raise BrokenPipeError("Connection closed by peer")
         return data
+
+    def recvLarge(self) -> bytes:
+        """
+        Receives a large block of data that was sent using sendLarge.
+
+        Returns:
+            bytes: the received raw data
+        """
+        size_bytes = self.recvRaw(4)
+        size = int.from_bytes(size_bytes, 'big')
+        data = b''
+        while len(data) < size:
+            data += self.recvRaw(constants.MESSAGE_SIZE)
+        return data
+
+    def sendLarge(self, data:bytes):
+        """
+        Sends a large block of data.
+
+        Args:
+            data (bytes): data to be send
+        """
+        size = len(data).to_bytes(4, 'big')
+        self.sendRaw(size)
+        self.sendRaw(data)
 

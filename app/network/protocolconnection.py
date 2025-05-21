@@ -1,9 +1,13 @@
-from network.secureconnection import ServerSecureConnection, ClientSecureConnection
+from network.secureconnection import ServerSecureConnection, ClientSecureConnection, SecureConnection
 from storage.dbhandler import DBHandler
+import constants
+
 import logging
+import abc
 
 class AuthenticationError(Exception):
     pass
+
 
 class ServerProtocolConnection(ServerSecureConnection):
     def __init__(self, socket, peerAddr, rsaKey, dbHandler):
@@ -14,7 +18,7 @@ class ServerProtocolConnection(ServerSecureConnection):
     def _beginHandshake(self):
         self.sendEncrypted(b'AUTH_REQUIRED')
         try:
-            response = self.recvEncrypted(self.MESSAGE_SIZE).decode()
+            response = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
             response = response.split(':')
             if len(response) != 2:
                 raise ValueError('Invalid data format')
@@ -47,12 +51,12 @@ class ClientProtocolConnection(ClientSecureConnection):
 
     def _beginHandshake(self):
         try:
-            command = self.recvEncrypted(self.MESSAGE_SIZE).decode()
+            command = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
             if command != 'AUTH_REQUIRED':
                 raise ValueError('Invalid auth prompt from server')
             authString = self.clientId + ':' + self.clientSecret
             self.sendEncrypted(authString.encode())
-            response = self.recvEncrypted(self.MESSAGE_SIZE).decode()
+            response = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
             if response == 'AUTH_INVALID':
                 raise AuthenticationError('Incorrect secret or hostname')
             if response == 'AUTH_CORRECT':

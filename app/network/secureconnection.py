@@ -14,7 +14,6 @@ logging.basicConfig(
 )
 
 
-MESSAGE_SIZE = 8192
 
 class ProtocolVersionError(Exception):
     pass
@@ -31,7 +30,6 @@ class SecureConnection(BaseConnection):
 
     def __init__(self, socket, peerAddr, rsaKey):
         super().__init__(socket, peerAddr)
-        self.MESSAGE_SIZE = MESSAGE_SIZE
         self.rsa = cryptohelper.CryptoHelperRSA(rsaKey)
         self.aes = None
         self._performKeyExchange()
@@ -55,12 +53,32 @@ class SecureConnection(BaseConnection):
         Receives encrypted data of the specified size, decrypts it using AES, and returns the plaintext
 
         Args:
-            size (int): The number of bytes to receive.
+            size (int): the number of bytes to receive
 
         Returns:
-            bytes: The decrypted plaintext data.
+            bytes: the decrypted plaintext data
         """
         data = self.recvRaw(size)
+        data = self.aes.decrypt(data)
+        return data
+
+    def sendEncryptedLarge(self, data:bytes): 
+        """
+        Sends a large payload of arbitrary length using AES encryption
+        Args:
+            data (bytes): the plaintext data to encrypt and send
+        """
+        data = self.aes.encrypt(data)
+        self.sendLarge(data)
+
+    def recvEncryptedLarge(self) -> bytes:
+        """
+        Receives a large encrypted payload using AES decryption.
+        
+        Returns:
+            bytes: the decrypted plaintext data
+        """
+        data = self.recvLarge()
         data = self.aes.decrypt(data)
         return data
 
@@ -83,12 +101,12 @@ class ServerSecureConnection(SecureConnection):
             protocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
             self.sendRaw(protocolMsg.encode())
             logging.debug(f'{self.peerAddr}: Greeting sent: {protocolMsg}')
-            encMsg = self.recvRaw(MESSAGE_SIZE)
+            encMsg = self.recvRaw(constants.MESSAGE_SIZE)
             aesKey = self.rsa.decrypt(encMsg)
             self.aes = cryptohelper.CryptoHelperAES(aesKey)
             logging.debug(f"{self.peerAddr}: AES key recieved")
             self.sendEncrypted(b'HNDSHK_PING')
-            testMsg = self.recvEncrypted(MESSAGE_SIZE)
+            testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
             if testMsg != b'HNDSHK_PONG':
                 raise ValueError(f'Incorrect handshake message: {testMsg}')
             logging.info(f"{self.peerAddr}: Handshake finished")
@@ -118,7 +136,7 @@ class ClientSecureConnection(SecureConnection):
     def _performKeyExchange(self):
         """ Refer to base class documentation. """
         try:
-            protocolMsg = self.recvRaw(MESSAGE_SIZE).decode()
+            protocolMsg = self.recvRaw(constants.MESSAGE_SIZE).decode()
             logging.debug(f'{self.peerAddr}: Greeting recieved from server: {protocolMsg}')
             myProtocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
             if protocolMsg != myProtocolMsg:
@@ -128,7 +146,7 @@ class ClientSecureConnection(SecureConnection):
             encMsg = self.rsa.encrypt(aesKey)
             logging.debug(f"Sending AES key")
             self.sendRaw(encMsg)
-            testMsg = self.recvEncrypted(MESSAGE_SIZE)
+            testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
             if testMsg != b'HNDSHK_PING':
                 raise ValueError('Incorrect handshake message: {testMsg}')
             self.sendEncrypted(b'HNDSHK_PONG')
