@@ -10,3 +10,6 @@ dist/
 
 .env
 .env.*
+
+# Temporary keys for testing purposes
+*.pem

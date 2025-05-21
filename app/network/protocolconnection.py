@@ -4,6 +4,7 @@ import constants
 
 import logging
 import abc
+import json
 
 class AuthenticationError(Exception):
     pass
@@ -13,7 +14,28 @@ class ServerProtocolConnection(ServerSecureConnection):
     def __init__(self, socket, peerAddr, rsaKey, dbHandler):
         super().__init__(socket, peerAddr, rsaKey)
         self.db = dbHandler
+        self.clientId = None
         self._beginHandshake()
+
+    def invokeAction(self, actionType: str, actionData: dict):
+        payload = {
+                "type": actionType,
+                "data": actionData
+        }
+        jsonPayload = json.dumps(payload).encode()
+        self.sendEncryptedLarge(jsonPayload)
+        try:
+            response = self.recvEncryptedLarge()
+            response = json.loads(response)
+            if 'type' not in response or 'data' not in response:
+                raise ValueError("'type' or 'data' field not found in response")
+            return response['type'], response['data']
+        except json.JSONDecodeError:
+            logging.warning("{self.peerAddr} ({self.clientId}): client sent invalid json")
+        except ValueError as e:
+            logging.warning("{self.peerAddr} ({self.clientId}): client sent invalid action response: {e}")
+
+
 
     def _beginHandshake(self):
         self.sendEncrypted(b'AUTH_REQUIRED')
@@ -32,7 +54,8 @@ class ServerProtocolConnection(ServerSecureConnection):
                 raise AuthenticationError('Incorrect secret or hostname')
             else:
                 self.sendEncrypted(b'AUTH_CORRECT')
-                loging.info(f'{self.peerAddr}: Authentication successful')
+                self.clientId = clientId
+                logging.info(f'{self.peerAddr}: Authentication successful as {self.clientId}')
         except ValueError as e:
             logging.warning(f'{self.peerAddr}: Error while authenticating: {e}')
             self.closeConnection()
@@ -48,6 +71,27 @@ class ClientProtocolConnection(ClientSecureConnection):
         self.clientId = clientId
         self.clientSecret = clientSecret
         self._beginHandshake()
+
+    def recvAction(self):
+        try:
+            action = self.recvEncryptedLarge()
+            action = json.loads(action)
+            if 'type' not in action or 'data' not in action:
+                raise ValueError("'type' or 'data' field not found in action")
+            return action['type'], action['data']
+        except json.JSONDecodeError:
+            logging.warning(f"{self.peerAddr} ({self.clientId}): server sent invalid json")
+        except ValueError as e:
+            logging.warning(f"{self.peerAddr}: client sent invalid action: {e}")
+
+ 
+    def sendResponse(self, responseType: str, responseData: dict):
+        payload = {
+                "type": responseType,
+                "data": responseData
+        }
+        jsonPayload = json.dumps(payload).encode()
+        self.sendEncryptedLarge(jsonPayload)
 
     def _beginHandshake(self):
         try:
