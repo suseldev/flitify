@@ -2,6 +2,8 @@ import config
 from server.flitifyserver import FlitifyServer
 from storage.dbhandler import DBHandler
 
+import logging
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] [%(levelname)s] %(message)s',

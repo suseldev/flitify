@@ -5,6 +5,8 @@ import config
 from client.clientconnection import ClientConnection
 from network.protocolconnection import ClientProtocolConnection
 
+import logging
+
 logging.basicConfig(
     level=logging.DEBUG,
     format='[%(asctime)s] [%(levelname)s] %(message)s',

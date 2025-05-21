@@ -20,6 +20,8 @@ class ClientThread(threading.Thread):
         self.client = ClientHandler(self.connection)
         self.client.ping()
         print(f'Status: {self.client.getStatus()}')
+        testFile = self.client.getFile('/etc/passwd')
+        print(testFile.decode())
 
 class FlitifyServer:
     def __init__(self, host, port, rsaKey, dbHandler):
