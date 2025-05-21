@@ -21,7 +21,7 @@ It is developed with security in mind, encrypting all communication between clie
 
 3. Install required packages:
     ```
-    python3 -m pip install -r server/requirements.txt
+    python3 -m pip install -r app/requirements.txt
     ```
 
 ## Testing
