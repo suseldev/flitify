@@ -5,6 +5,7 @@ import base64
 
 import constants
 from network.protocolconnection import ServerProtocolConnection
+import socket
 
 class FileTransferError(Exception):
     pass
@@ -70,6 +71,8 @@ class ClientHandler():
             logging.warning('{self.connection.peerAddr} ({self.clientId}): get_file failed: {e}') 
 
     def _keepAliveLoop(self, interval=constants.INTERVAL):
+        if not self.connection.running:
+            return
         logging.debug(f'{self.connection.peerAddr} ({self.clientId}): keepAliveLoop started')
         while True:
             if not self.connection.running:
@@ -79,6 +82,9 @@ class ClientHandler():
                 continue
             try:
                 self.ping()
+            except socket.timeout:
+                logging.error(f'{self.connection.peerAddr} ({self.clientId}): Connection timed out')
+                self.connection.closeConnection()
             except Exception as e:
                 logging.error(f'{self.connection.peerAddr} ({self.clientId}): Uncaught exception in keepAliveLoop: {e}')
                 self.connection.closeConnection()

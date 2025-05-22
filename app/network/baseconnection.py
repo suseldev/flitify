@@ -16,6 +16,7 @@ class BaseConnection:
         self.peerAddr = peerAddr
         self.peerAddr = f'{self.peerAddr[0]}:{self.peerAddr[1]}'
         self.running = True
+        self.logger = logging.getLogger('flitify')
 
     def closeConnection(self):
         """
@@ -39,7 +40,7 @@ class BaseConnection:
         try:
             self.socket.sendall(data)
         except BrokenPipeError:
-            logging.debug(f"{self.peerAddr}: Connection closed during sendRaw")
+            self.logger.debug(f"{self.peerAddr}: Connection closed during sendRaw")
             self.closeConnection()
             raise
 
@@ -61,7 +62,7 @@ class BaseConnection:
         data = self.socket.recv(size)
         if not data:
             self.closeConnection()
-            logging.debug(f"{self.peerAddr}: Connection closed during recvRaw")
+            self.logger.debug(f"{self.peerAddr}: Connection closed during recvRaw")
             raise BrokenPipeError("Connection closed")
         return data
 

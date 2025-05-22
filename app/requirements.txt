@@ -2,3 +2,5 @@ flask
 waitress
 pycryptodome
 pytest
+flask
+waitress

@@ -92,23 +92,25 @@ class ServerSecureConnection(SecureConnection):
         try:
             protocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
             self.sendRaw(protocolMsg.encode())
-            logging.debug(f'{self.peerAddr}: Greeting sent: {protocolMsg}')
+            self.logger.debug(f'{self.peerAddr}: Greeting sent: {protocolMsg}')
             encMsg = self.recvRaw(constants.MESSAGE_SIZE)
             aesKey = self.rsa.decrypt(encMsg)
             self.aes = cryptohelper.CryptoHelperAES(aesKey)
-            logging.debug(f"{self.peerAddr}: AES key recieved")
+            self.logger.debug(f"{self.peerAddr}: AES key recieved")
             self.sendEncrypted(b'HNDSHK_PING')
             testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
             if testMsg != b'HNDSHK_PONG':
                 raise ValueError(f'Incorrect handshake message: {testMsg}')
-            logging.debug(f"{self.peerAddr}: Handshake finished")
+            self.logger.debug(f"{self.peerAddr}: Handshake finished")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
+            self.logger.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
             self.closeConnection()
         except BrokenPipeError:
-            logging.warning(f"{self.peerAddr}: Connection broken during key exchange")
+            self.logger.warning(f"{self.peerAddr}: Connection broken during key exchange")
+            self.closeConnection()
         except socket.timeout:
-            logging.warning(f"{self.peerAddr}: Socket timed out during key exchange")
+            self.logger.warning(f"{self.peerAddr}: Socket timed out during key exchange")
+            self.closeConnection()
 
 class ClientSecureConnection(SecureConnection):
     """
@@ -126,31 +128,31 @@ class ClientSecureConnection(SecureConnection):
         """ Refer to base class documentation. """
         try:
             protocolMsg = self.recvRaw(constants.MESSAGE_SIZE).decode()
-            logging.debug(f'{self.peerAddr}: Greeting recieved from server: {protocolMsg}')
+            self.logger.debug(f'{self.peerAddr}: Greeting recieved from server: {protocolMsg}')
             myProtocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
             if protocolMsg != myProtocolMsg:
                 raise ProtocolVersionError(f"My version is: {constants.PROTOCOL_VERSION}, server sent: {protocolMsg}")
             self.aes = cryptohelper.CryptoHelperAES()
             aesKey = self.aes.key
             encMsg = self.rsa.encrypt(aesKey)
-            logging.debug(f"Sending AES key")
+            self.logger.debug(f"Sending AES key")
             self.sendRaw(encMsg)
             testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
             if testMsg != b'HNDSHK_PING':
                 raise ValueError('Incorrect handshake message: {testMsg}')
             self.sendEncrypted(b'HNDSHK_PONG')
-            logging.info(f"{self.peerAddr}: Client handshake finished")
+            self.logger.info(f"{self.peerAddr}: Client handshake finished")
         except ValueError as e:
-            logging.error(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")
+            self.logger.error(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")
             self.closeConnection()
             raise
         except BrokenPipeError:
-            logging.warning(f"{self.peerAddr}: Connection broken by server during handshake")
+            self.logger.warning(f"{self.peerAddr}: Connection broken by server during handshake")
             raise
         except ProtocolVersionError as e:
-            logging.error(f"{self.peerAddr}: Protocol mismatch: {e}")
+            self.logger.error(f"{self.peerAddr}: Protocol mismatch: {e}")
             self.closeConnection()
             raise
         except socket.timeout:
-            logging.error(f"{self.peerAddr}: Client socket timed out during key exchange")
+            self.logger.error(f"{self.peerAddr}: Client socket timed out during key exchange")
             raise

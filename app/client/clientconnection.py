@@ -7,20 +7,21 @@ from network.protocolconnection import ClientProtocolConnection
 class ClientConnection():
     def __init__(self, connection:ClientProtocolConnection):
         self.connection = connection
+        self.logger = logging.getLogger("flitifyclient")
         self._actionLoop()
 
     def _actionLoop(self):
         while True:
             if not self.connection.running:
-                logging.error(f'{self.connection.peerAddr}: connection closed during actionLoop')
+                self.logger.error(f'{self.connection.peerAddr}: connection closed during actionLoop')
                 break
             command, commandData = self.connection.recvAction()
-            logging.debug(f'{self.connection.peerAddr}: received command {command}')
+            self.logger.debug(f'{self.connection.peerAddr}: received command {command}')
             match command:
                 case 'kick':
                     if 'reason' not in commandData:
                         raise ValueError('kicked without reason')
-                    logging.error(f"{self.connection.peerAddr}: kicked by server: {commandData['reason']}")
+                    self.logger.error(f"{self.connection.peerAddr}: kicked by server: {commandData['reason']}")
                     self.connection.closeConnection()
                     return
                 case 'ping':
@@ -46,5 +47,5 @@ class ClientConnection():
             self.connection.sendResponse('file_send', {'status': 'ok', 'filedata': fileData})
         except Exception as e:
             self.connection.sendResponse('file_send', {'status': 'failed'})
-            logging.debug(f'{self.connection.peerAddr}: file_send failed: {e}')
+            self.logger.debug(f'{self.connection.peerAddr}: file_send failed: {e}')
 

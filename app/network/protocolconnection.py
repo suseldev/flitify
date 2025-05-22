@@ -5,6 +5,7 @@ import constants
 import logging
 import json
 import threading
+import socket
 
 class AuthenticationError(Exception):
     pass
@@ -29,9 +30,9 @@ class ServerProtocolConnection(ServerSecureConnection):
             jsonPayload = json.dumps(payload).encode()
             self.sendEncryptedLarge(jsonPayload)
         except Exception as e:
-            logging.warning(f'{self.peerAddr} ({self.clientId or "unknown"}): failed to close connection gracefully: {e}')
+            self.logger.warning(f'{self.peerAddr} ({self.clientId or "unknown"}): failed to close connection gracefully: {e}')
         self.closeConnection()
-        logging.debug(f"{self.peerAddr} ({self.clientId or 'unknown'}): connection closed with reason {reason}")
+        self.logger.debug(f"{self.peerAddr} ({self.clientId or 'unknown'}): connection closed with reason {reason}")
 
     def invokeAction(self, actionType: str, actionData: dict):
         with self.sendLock:
@@ -50,15 +51,17 @@ class ServerProtocolConnection(ServerSecureConnection):
                     raise ValueError("client sent 'invalid_action'")
                 return response['type'], response['data']
             except json.JSONDecodeError:
-                logging.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid json")
+                self.logger.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid json")
             except ValueError as e:
-                logging.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid action response: {e}")
+                self.logger.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid action response: {e}")
 
 
 
     def _beginHandshake(self):
-        self.sendEncrypted(b'AUTH_REQUIRED')
+        if not self.running:
+            return
         try:
+            self.sendEncrypted(b'AUTH_REQUIRED')
             response = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
             response = response.split(':')
             if len(response) != 2:
@@ -75,13 +78,19 @@ class ServerProtocolConnection(ServerSecureConnection):
                 self.sendEncrypted(b'AUTH_CORRECT')
                 self.clientId = clientId
                 self.authenticated = True
-                logging.info(f'{self.peerAddr}: Authentication successful as {self.clientId}')
+                self.logger.info(f'{self.peerAddr}: Authentication successful as {self.clientId}')
         except ValueError as e:
-            logging.warning(f'{self.peerAddr}: Error while authenticating: {e}')
+            self.logger.warning(f'{self.peerAddr}: Error while authenticating: {e}')
             self.closeConnection()
         except AuthenticationError as e:
-            logging.warning(f'{self.peerAddr}: Authentication error: {e}')
+            self.logger.warning(f'{self.peerAddr}: Authentication error: {e}')
             self.closeConnectionWithReason(f'Authentication error: {e}')
+        except socket.timeout:
+            self.logger.warning(f'{self.peerAddr}: Connection timed out during authentication')
+            self.closeConnection()
+        except Exception as e:
+            self.logger.error(f'{self.peerAddr}: Uncaught exception during authentication: {e}')
+            self.closeConnection()
 
 class ClientProtocolConnection(ClientSecureConnection):
     def __init__(self, socket, peerAddr, rsaKey, clientId, clientSecret):
@@ -98,9 +107,9 @@ class ClientProtocolConnection(ClientSecureConnection):
                 raise ValueError("'type' or 'data' field not found in action")
             return action['type'], action['data']
         except json.JSONDecodeError:
-            logging.warning(f"{self.peerAddr} ({self.clientId}): Server sent invalid json")
+            self.logger.warning(f"{self.peerAddr} ({self.clientId}): Server sent invalid json")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: Client sent invalid action: {e}")
+            self.logger.warning(f"{self.peerAddr}: Client sent invalid action: {e}")
 
  
     def sendResponse(self, responseType: str, responseData: dict):
@@ -122,12 +131,10 @@ class ClientProtocolConnection(ClientSecureConnection):
             if response == 'AUTH_INVALID':
                 raise AuthenticationError('Incorrect secret or hostname')
             if response == 'AUTH_CORRECT':
-                logging.info(f'{self.peerAddr}: Client authentication successful')
+                self.logger.info(f'{self.peerAddr}: Client authentication successful')
         except ValueError as e:
-            logging.error(f'{self.peerAddr}: Invalid data from server: {e}')
+            self.logger.error(f'{self.peerAddr}: Invalid data from server: {e}')
             self.closeConnection()
-            raise
         except AuthenticationError as e:
-            logging.error(f'{self.peerAddr}: Client authentication error: {e}')
+            self.logger.error(f'{self.peerAddr}: Client authentication error: {e}')
             self.closeConnection()
-            raise
