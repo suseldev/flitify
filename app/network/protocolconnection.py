@@ -16,8 +16,23 @@ class ServerProtocolConnection(ServerSecureConnection):
         self.db = dbHandler
         self.clientId = None
         self.sendLock = threading.Lock()
+        self.authenticated = False
         self._beginHandshake()
 
+
+    def closeConnectionWithReason(self, reason):
+        try:
+            if self.authenticated:
+                payload = {
+                        "type": 'kick',
+                        "data": {'reason': reason}
+                }
+                jsonPayload = json.dumps(payload).encode()
+                self.sendEncryptedLarge(jsonPayload)
+        except Exception as e:
+            logging.warning(f'{self.peerAddr} ({self.clientId or "unknown"}): failed to close connection gracefully: {e}')
+        self.closeConnection()
+        logging.debug(f"{self.peerAddr} ({self.clientId or 'unknown'}): connection closed with reason {reason}")
 
     def invokeAction(self, actionType: str, actionData: dict):
         with self.sendLock:
@@ -60,6 +75,7 @@ class ServerProtocolConnection(ServerSecureConnection):
             else:
                 self.sendEncrypted(b'AUTH_CORRECT')
                 self.clientId = clientId
+                self.authenticated = True
                 logging.info(f'{self.peerAddr}: Authentication successful as {self.clientId}')
         except ValueError as e:
             logging.warning(f'{self.peerAddr}: Error while authenticating: {e}')
@@ -85,9 +101,9 @@ class ClientProtocolConnection(ClientSecureConnection):
                 raise ValueError("'type' or 'data' field not found in action")
             return action['type'], action['data']
         except json.JSONDecodeError:
-            logging.warning(f"{self.peerAddr} ({self.clientId}): server sent invalid json")
+            logging.warning(f"{self.peerAddr} ({self.clientId}): Server sent invalid json")
         except ValueError as e:
-            logging.warning(f"{self.peerAddr}: client sent invalid action: {e}")
+            logging.warning(f"{self.peerAddr}: Client sent invalid action: {e}")
 
  
     def sendResponse(self, responseType: str, responseData: dict):

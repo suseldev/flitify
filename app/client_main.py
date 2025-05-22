@@ -29,4 +29,11 @@ def main():
     connection = ClientConnection(ClientProtocolConnection(clientSocket, (server_address, server_port), public_rsa_key, client_id, client_secret))
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except BrokenPipeError as e:
+        logging.error(f"Connection closed: broken pipe: {e}")
+    except ConnectionRefusedError:
+        logging.error("Connection refused")
+    except KeyboardInterrupt:
+        logging.info("Shutting down client, keyboard interrupt")

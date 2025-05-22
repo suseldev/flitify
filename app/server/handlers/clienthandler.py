@@ -1,9 +1,10 @@
 import threading
 import time
 import logging
-
-from network.protocolconnection import ServerProtocolConnection
 import base64
+
+import constants
+from network.protocolconnection import ServerProtocolConnection
 
 class FileTransferError(Exception):
     pass
@@ -14,8 +15,11 @@ class ClientHandler():
         self.clientId = connection.clientId
         self._startKeepAliveLoop()
     
+    def getConnection(self):
+        return self.connection
+
     def isOnline(self):
-        if not self.connection.sendLock.locked():
+        if self.connection.sendLock.locked():
             return True 
         return self.ping()
 
@@ -28,9 +32,9 @@ class ClientHandler():
                 raise ValueError('invalid response from client for ping: {resp_type}')
             return True
         except ValueError as e:
-            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): ping failed: {e}') 
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): Ping failed: {e}') 
         except BrokenPipeError:
-            logging.info(f'{self.connection.peerAddr} ({self.clientId}): connection closed by remote host')
+            logging.info(f'{self.connection.peerAddr} ({self.clientId}): Connection closed')
 
     def getStatus(self):
         actionType = 'get_status'
@@ -64,16 +68,19 @@ class ClientHandler():
             return filebytes
         except ValueError as e:
             logging.warning('{self.connection.peerAddr} ({self.clientId}): get_file failed: {e}') 
-    def _keepAliveLoop(self, interval=5):
+
+    def _keepAliveLoop(self, interval=constants.INTERVAL):
         logging.debug(f'{self.connection.peerAddr} ({self.clientId}): keepAliveLoop started')
-        while self.connection.running:
+        while True:
+            if not self.connection.running:
+                return
             time.sleep(interval)
             if self.connection.sendLock.locked():
                 continue
             try:
                 self.ping()
             except Exception as e:
-                logging.error(f'{self.connection.peerAddr} ({self.clientId}): uncaught exception in keepAliveLoop: {e}')
+                logging.error(f'{self.connection.peerAddr} ({self.clientId}): Uncaught exception in keepAliveLoop: {e}')
                 self.connection.closeConnection()
 
     def _startKeepAliveLoop(self):

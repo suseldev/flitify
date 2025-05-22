@@ -17,6 +17,12 @@ class ClientConnection():
             command, commandData = self.connection.recvAction()
             logging.debug(f'{self.connection.peerAddr}: received command {command}')
             match command:
+                case 'kick':
+                    if 'reason' not in commandData:
+                        raise ValueError('kicked without reason')
+                    logging.error(f"{self.connection.peerAddr}: kicked by server: {commandData['reason']}")
+                    self.connection.closeConnection()
+                    return
                 case 'ping':
                     self.connection.sendResponse('pong', {})
                 case 'get_status':

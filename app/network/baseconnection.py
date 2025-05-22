@@ -35,11 +35,11 @@ class BaseConnection:
             BrokenPipeError: if the connection is closed during sending
         """
         if not self.running:
-            raise BrokenPipeError("attempted to send on a closed connection")
+            raise BrokenPipeError("Attempted to send on a closed connection")
         try:
             self.socket.sendall(data)
         except BrokenPipeError:
-            logging.debug(f"{self.peerAddr}: connection closed during sendRaw")
+            logging.debug(f"{self.peerAddr}: Connection closed during sendRaw")
             self.closeConnection()
             raise
 
@@ -57,12 +57,12 @@ class BaseConnection:
             BrokenPipeError: If the connection is closed by the peer
         """
         if not self.running:
-            raise BrokenPipeError("attempted to recv on a closed connection")
+            raise BrokenPipeError("Attempted to recv on a closed connection")
         data = self.socket.recv(size)
         if not data:
             self.closeConnection()
-            logging.debug(f"{self.peerAddr}: connection closed during recvRaw")
-            raise BrokenPipeError("Connection closed by peer")
+            logging.debug(f"{self.peerAddr}: Connection closed during recvRaw")
+            raise BrokenPipeError("Connection closed")
         return data
 
     def recvLarge(self) -> bytes:
