@@ -101,7 +101,7 @@ class ServerSecureConnection(SecureConnection):
             testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
             if testMsg != b'HNDSHK_PONG':
                 raise ValueError(f'Incorrect handshake message: {testMsg}')
-            logging.info(f"{self.peerAddr}: Handshake finished")
+            logging.debug(f"{self.peerAddr}: Handshake finished")
         except ValueError as e:
             logging.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
             self.closeConnection()
