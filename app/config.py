@@ -3,5 +3,5 @@ def loadServerConfig():
     return config
 
 def loadClientConfig():
-    config = {'server_address': 'localhost', 'server_port': 2137, 'server_public_key_path': 'pubkey.pem', 'client_id': 'TEST-1', 'client_secret':'abcdefgh'}
+    config = {'server_address': 'localhost', 'server_port': 2137, 'server_public_key_path': 'pubkey.pem', 'client_id': 'TEST-3', 'client_secret':'abcdefgh'}
     return config

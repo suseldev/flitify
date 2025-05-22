@@ -22,13 +22,12 @@ class ServerProtocolConnection(ServerSecureConnection):
 
     def closeConnectionWithReason(self, reason):
         try:
-            if self.authenticated:
-                payload = {
-                        "type": 'kick',
-                        "data": {'reason': reason}
-                }
-                jsonPayload = json.dumps(payload).encode()
-                self.sendEncryptedLarge(jsonPayload)
+            payload = {
+                    "type": 'kick',
+                    "data": {'reason': reason}
+            }
+            jsonPayload = json.dumps(payload).encode()
+            self.sendEncryptedLarge(jsonPayload)
         except Exception as e:
             logging.warning(f'{self.peerAddr} ({self.clientId or "unknown"}): failed to close connection gracefully: {e}')
         self.closeConnection()
@@ -68,7 +67,7 @@ class ServerProtocolConnection(ServerSecureConnection):
             secret = response[1]
             if secret is None:
                 self.sendEncrypted(b'AUTH_INVALID')
-                raise AuthenticationError('No secret given')
+                raise AuthenticationError('secret not found for id: {clientId}')
             if secret != self.db.getSharedSecret(clientId):
                 self.sendEncrypted(b'AUTH_INVALID')
                 raise AuthenticationError('Incorrect secret or hostname')
@@ -80,11 +79,9 @@ class ServerProtocolConnection(ServerSecureConnection):
         except ValueError as e:
             logging.warning(f'{self.peerAddr}: Error while authenticating: {e}')
             self.closeConnection()
-            raise
         except AuthenticationError as e:
             logging.warning(f'{self.peerAddr}: Authentication error: {e}')
-            self.closeConnection()
-            raise
+            self.closeConnectionWithReason(f'Authentication error: {e}')
 
 class ClientProtocolConnection(ClientSecureConnection):
     def __init__(self, socket, peerAddr, rsaKey, clientId, clientSecret):

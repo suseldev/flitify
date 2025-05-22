@@ -105,13 +105,10 @@ class ServerSecureConnection(SecureConnection):
         except ValueError as e:
             logging.warning(f"{self.peerAddr}: Unexpected data format during key exchange, closing connection: {e}")
             self.closeConnection()
-            raise
         except BrokenPipeError:
             logging.warning(f"{self.peerAddr}: Connection broken during key exchange")
-            raise
         except socket.timeout:
             logging.warning(f"{self.peerAddr}: Socket timed out during key exchange")
-            raise
 
 class ClientSecureConnection(SecureConnection):
     """

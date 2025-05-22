@@ -3,7 +3,7 @@ import socket
 
 import config
 from client.clientconnection import ClientConnection
-from network.protocolconnection import ClientProtocolConnection
+from network.protocolconnection import ClientProtocolConnection, AuthenticationError
 
 import logging
 
@@ -37,3 +37,5 @@ if __name__ == "__main__":
         logging.error("Connection refused")
     except KeyboardInterrupt:
         logging.info("Shutting down client, keyboard interrupt")
+    except AuthenticationError:
+        pass
