@@ -8,6 +8,9 @@ from network.protocolconnection import ServerProtocolConnection
 
 import constants
 
+class ClientNotFoundError(ValueError):
+    pass
+
 class ClientThread(threading.Thread):
     def __init__(self, socket, peerAddr, rsaKey, dbHandler):
         self.socket = socket
@@ -41,7 +44,9 @@ class FlitifyServer:
         self.activeClients = {}
     
     def getClientById(self, clientId:str) -> ClientHandler:
-        pass
+        if clientId not in self.activeClients:
+            raise ClientNotFoundError()
+        return self.activeClients[clientId]
 
     def start(self):
         self.sock.bind((self.host, self.port))
