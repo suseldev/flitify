@@ -44,6 +44,7 @@ class FlitifyServer:
                 client_sock, client_addr = self.sock.accept()
                 logging.info(f'{client_addr[0]}:{client_addr[1]}: connection accepted')
                 try:
+                    # TODO: Actual support for multiple client threads, add getClient(CLIENT_ID) method, check for duplicates
                     self.clientThread = ClientThread(client_sock, client_addr, self.rsaKey, self.dbHandler)
                     self.clientThread.start()
                 except Exception as e:
