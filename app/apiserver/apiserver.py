@@ -25,7 +25,6 @@ class ApiServer:
         return response
 
     def _setup_routes(self):
-        # API specification: 404 = object not found; 418 (I'm a teapot): client failed
         @self.app.route('/')
         def index():
             return jsonify({'status': 'ok', 'details': 'api server online'})
@@ -58,6 +57,7 @@ class ApiServer:
                     return self._failWithReason('unknown', error_code=504)
             except FileTransferError as e:
                 return self._failWithReason('file transfer error', error_code=504)
+            # Set response type to downloadable file
             response.headers.set('Content-Type', 'application/octet-stream')
             return response
 
