@@ -68,7 +68,9 @@ class ClientHandler():
             # TODO: Validate checksum
             return filebytes
         except ValueError as e:
-            logging.warning('{self.connection.peerAddr} ({self.clientId}): get_file failed: {e}') 
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): get_file failed (ValueError): {e}') 
+        except FileTransferError as e:
+            logging.info(f'{self.connection.peerAddr} ({self.clientId}): get_file failed (FileTransferError): {e}')
 
     def _keepAliveLoop(self, interval=constants.INTERVAL):
         if not self.connection.running:

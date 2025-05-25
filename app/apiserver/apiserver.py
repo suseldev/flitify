@@ -1,5 +1,5 @@
 from waitress import serve
-from flask import Flask, abort, jsonify, request, make_response
+from flask import g, Flask, abort, jsonify, request, make_response
 import logging
 
 from server.flitifyserver import FlitifyServer
@@ -13,10 +13,22 @@ class ApiServer:
         self.app = Flask(__name__)
         self._setup_routes()
 
+    def _getClient(self, clientId):
+        client = self.fserver.getClientById(clientId)
+        if client:
+            return client.getClient()
+        return None
+
+    def _failWithReason(self, reason, error_code=400):
+        response = jsonify({'status': 'failed', 'reason': reason})
+        response.status_code = error_code
+        return response
+
     def _setup_routes(self):
+        # API specification: 404 = object not found; 418 (I'm a teapot): client failed
         @self.app.route('/')
         def index():
-            return "Hello World!"
+            return jsonify({'status': 'ok', 'details': 'api server online'})
 
         @self.app.route('/clients')
         def getOnlineClients():
@@ -26,38 +38,26 @@ class ApiServer:
         @self.app.route('/<clientId>/status')
         def clientStatus(clientId: str):
             response_obj = {'status': 'ok', clientId: {}}
-            client = self.fserver.getClientById(clientId)
+            client = self._getClient(clientId)
             if not client:
-                respnose = jsonify({'status': 'failed'})
-                response.status_code = 404
-                return response
-            response_obj[clientId] = client.getClient().getStatus()
+                return self._failWithReason('client not found', error_code=404)
+            response_obj[clientId] = client.getStatus()
             return jsonify(response_obj)
 
         @self.app.route('/<clientId>/getfile')
         def getFile(clientId: str):
             filePath = request.args.get('file_path')
-            client = self.fserver.getClientById(clientId)
+            client = self._getClient(clientId)
             if not client:
-                response = jsonify({'status': 'failed', 'details': 'Client not found'})
-                response.status_code = 404
-                return response
-            client = client.getClient()
+                return self._failWithReason('client not found', error_code=404)
             if not filePath:
-                response = jsonify({'status': 'failed', 'details': 'Invalid parameters'})
-                response.status_code = 400
-                return response
+                return self._failWithReason('invalid parameters for getfile', 400)
             try:
                 file = client.getFile(filePath)
                 if not file:
-                    response = jsonify({'status': 'failed'})
-                    response.status_code = 400 
-                    return response
+                    return self._failWithReason('unknown', error_code=504)
             except FileTransferError as e:
-                response = jsonify({'status': 'failed', 'details': str(e)})
-                response.status_code = 404
-                return response
-            response = make_response(file)
+                return self._failWithReason('file transfer error', error_code=504)
             response.headers.set('Content-Type', 'application/octet-stream')
             return response
 
@@ -65,6 +65,3 @@ class ApiServer:
 
     def start(self):
         serve(self.app, host=self.host, port=self.port)
-
-
-
