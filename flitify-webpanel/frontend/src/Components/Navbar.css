@@ -1,0 +1,141 @@
+:root {
+	--color-navbar-link-active: #8a78db;
+	--color-navbar-link-hover: #7161ef;
+	--color-navbar-user: #E0E0E0;
+	--color-navbar-bg-mobile-active: rgba(0, 0, 0, 0.7);
+}
+
+.navbar {
+    z-index: 1;
+    position: fixed;
+    top: 0;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+	backdrop-filter: blur(10px);
+	padding-top: 16px;
+	padding-bottom: 16px;
+	transition: background-color 300ms;
+	background: linear-gradient(90deg, #2a2640 0%, #3a3360 100%);
+	color: white;
+}
+
+.navbar .logo {
+	margin-left: 32px;
+	margin-right: 32px;
+	display: flex;
+	align-items: center;
+}
+.navbar .logo .hamburger {
+	background: none;
+	border: none;
+	color: white;
+	cursor: pointer;
+	display: none;
+}
+
+.navbar .logo .flitify {
+	font-weight: 600;
+	font-size: 32px;
+}
+
+.navbar ul{
+	list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar ul li {
+	margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+.navbar ul li a {
+	text-decoration: none;
+    color: white;
+    font-size: 18px;
+    margin-right: 8px;
+    margin-left: 8px;
+	padding-top: 8px;
+	padding-bottom: 8px;
+	transition: color 300ms;
+}
+
+.navbar ul li a:hover {
+	color: var(--color-navbar-link-hover);
+}
+
+.navbar ul li a.active {
+	color: var(--color-navbar-link-active);
+	font-weight: 500;
+}
+
+.navbar .user {
+	color: var(--color-navbar-user);
+	font-size: 18px;
+	margin-left: auto;
+	margin-right: 24px;
+	text-decoration: none;
+	transition: color 300ms;
+}
+
+.navbar .user:hover {
+	color: white;
+}
+
+
+@media only screen and (orientation: portrait), (max-width: 640px) {
+	.navbar {
+		/* justify-content: center; */
+		align-items: flex-start;
+		padding-top: 8px;
+		flex-direction: column;
+		background-color: var(--color-navbar-bg-mobile-active);
+		background: none;
+		transition: max-height 300ms, height 300ms, background-color 300ms;
+	}
+	.navbar .logo {
+		margin-left: 12px;
+	}
+	.navbar .logo .hamburger {
+		display: block;
+		padding: 0;
+		margin-left: 4px;
+		margin-right: 12px;
+	}
+	.navbar.active {
+		background-color: var(--color-navbar-bg-mobile-active);
+		backdrop-filter: blur(10px);
+		max-height: 100vh;
+		height: 100vh;
+	}
+	.navbar ul {
+		display: none;
+		width: 100%;
+	}
+	.navbar.active ul {
+		display: unset;
+	}
+	.navbar ul li {
+		display: block;
+		width: 100%;
+		text-align: center;
+		margin-top: 16px;
+		margin-bottom: 16px;
+	}
+	.navbar ul li a {
+		font-size: 20px;
+	}
+	.navbar .user {
+		display: none
+	}
+	.navbar.active .user {
+		display: block;
+		margin-right: auto;
+		font-size: 20px;
+	}
+}
