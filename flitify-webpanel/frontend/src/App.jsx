@@ -18,8 +18,10 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<AuthRedirect />} />
-        <Route path="/interact" element={<Layout><Interact /></Layout>} />
-        <Route path="/login" element={<div>Login Page</div>} /> {/* opcjonalna strona logowania */}
+		<Route path="/" element={<Layout />}>
+			<Route path="/interact" element={<Interact />} />
+		</Route>
+        <Route path="/login" element={<div>Login Page</div>} />
       </Routes>
     </BrowserRouter>
   );

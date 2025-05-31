@@ -72,6 +72,20 @@ class ClientHandler():
         except FileTransferError as e:
             logging.info(f'{self.connection.peerAddr} ({self.clientId}): get_file failed (FileTransferError): {e}')
 
+    def listDirectory(self, path: str) -> list | None:
+        actionType = 'list_dir'
+        data = {'path': path}
+        try:
+            resp_type, resp_contents = self.connection.invokeAction(actionType, data)
+            if resp_type != 'list_dir':
+                raise ValueError(f'invalid response type from client for list_dir: {resp_type}')
+            if resp_contents.get('status') != 'ok':
+                raise ValueError(f"list_dir failed: {resp_contents.get('status')}")
+            return resp_contents['entries']
+        except Exception as e:
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): listDirectory failed: {e}')
+            return None
+
     def _keepAliveLoop(self, interval=constants.INTERVAL):
         if not self.connection.running:
             return

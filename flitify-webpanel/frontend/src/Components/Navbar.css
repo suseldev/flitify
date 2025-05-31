@@ -2,6 +2,7 @@
 	--color-navbar-link-active: #8a78db;
 	--color-navbar-link-hover: #7161ef;
 	--color-navbar-user: #E0E0E0;
+	--max-navbar-height: 72px;
 	--color-navbar-bg-mobile-active: rgba(0, 0, 0, 0.7);
 }
 
@@ -15,9 +16,11 @@
     width: 100%;
     margin: 0;
     padding: 0;
+	height: var(--max-navbar-height);
 	backdrop-filter: blur(10px);
 	padding-top: 16px;
 	padding-bottom: 16px;
+	box-sizing: border-box;
 	transition: background-color 300ms;
 	background: linear-gradient(90deg, #2a2640 0%, #3a3360 100%);
 	color: white;

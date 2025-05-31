@@ -1,0 +1,7 @@
+.page-content { 
+	padding-top: var(--max-navbar-height);
+	margin: 0;
+	display: block;
+	height: 100vh;
+	box-sizing: border-box;
+}

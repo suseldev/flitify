@@ -1,13 +1,22 @@
+import platform
 import logging
 import os
 import base64
 
 from network.protocolconnection import ClientProtocolConnection
+from client.OSAgents.linux import LinuxAgent
 
 class ClientConnection():
     def __init__(self, connection:ClientProtocolConnection):
         self.connection = connection
         self.logger = logging.getLogger("flitifyclient")
+        match platform.system():
+            case "Linux":
+                self.osagent = LinuxAgent()
+            case "Windows":
+                raise NotImplementedError("WindowsAgent not yet implemented")
+            case _:
+                raise NotImplementedError(f"Unsupported OS: {platform.system()}")
         self._actionLoop()
 
     def _actionLoop(self):
@@ -29,6 +38,9 @@ class ClientConnection():
                 case 'get_status':
                     status_dict = {'cpu': 36, 'ram': 48}
                     self.connection.sendResponse('status', status_dict)
+                case 'list_dir':
+                    path = commandData.get('path', '/')
+                    self.getDirectoryListing(path)
                 case 'get_file':
                     if not 'path' in commandData:
                         raise ValueError("file_send: 'path' not found in server request")
@@ -36,6 +48,16 @@ class ClientConnection():
                     self.sendFile(commandData['path'])
                 case _:
                     self.connection.sendResponse('invalid_action', {})
+
+    def getDirectoryListing(self, path:str):
+        try:
+            entries = self.osagent.getDirectoryListing(path)
+            self.connection.sendResponse('list_dir', {'status': 'ok', 'entries': entries})
+        except FileNotFoundError:
+            self.connection.sendResponse('list_dir', {'status': 'not_found'})
+        except Exception as e:
+            self.logger.debug(f'{self.connection.peerAddr}: list_dir failed: {e}')
+            self.connection.sendResponse('list_dir', {'status': 'failed'})
 
     def sendFile(self, path:str):
         try:

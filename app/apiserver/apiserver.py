@@ -61,6 +61,18 @@ class ApiServer:
             response.headers.set('Content-Type', 'application/octet-stream')
             return response
 
+        @self.app.route('/<clientId>/listdir')
+        def listDirectory(clientId: str):
+            path = request.args.get('path', '/')
+            client = self._getClient(clientId)
+            if not client:
+                return self._failWithReason('client not found', error_code=404)
+            entries = client.listDirectory(path)
+            if entries is None:
+                return self._failWithReason('client list_dir failed', error_code=500)
+            return jsonify({'status': 'ok', 'entries': entries})
+
+
 
 
     def start(self):
