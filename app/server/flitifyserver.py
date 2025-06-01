@@ -36,7 +36,7 @@ class FlitifyServer:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.waitingClients = []
-        self.watchdogThread = threading.Thread(target=self._clientsWatchdog, daemon=True)
+        self.watchdogThread = threading.Thread(target=self._clientsWatchdog, daemon=True, name='FlitifyServer-Watchdog')
         self.watchdogThread.start()
         self.activeClients = {}
         self.logger = logging.getLogger('flitify')

@@ -60,7 +60,6 @@ class SecureConnection(BaseConnection):
         Args:
             data (bytes): the plaintext data to encrypt and send
         """
-        logging.debug(f'Send: {data}')
         data = self.aes.encrypt(data)
         self.sendLarge(data)
 
@@ -73,7 +72,6 @@ class SecureConnection(BaseConnection):
         """
         data = self.recvLarge()
         data = self.aes.decrypt(data)
-        logging.debug(f'Received: {data}')
         return data
 
 class ServerSecureConnection(SecureConnection):

@@ -50,7 +50,7 @@ class ApiServer:
             if not client:
                 return self._failWithReason('client not found', error_code=404)
             if not filePath:
-                return self._failWithReason('invalid parameters for getfile', 400)
+                return self._failWithReason('invalid parameters for getfile', error_code=400)
             try:
                 file = client.getFile(filePath)
                 if not file:
@@ -93,16 +93,16 @@ class ApiServer:
         @self.app.route('/<clientId>/uploadfile', methods=['POST'])
         def uploadFile(clientId: str):
             if 'file' not in request.files or 'path' not in request.form:
-                return self._failWithReason('Missing file or path', 400)
+                return self._failWithReason('Missing file or path', error_code=400)
             file = request.files['file']
             path = request.form['path']
             file_bytes = file.read()
             client = self._getClient(clientId)
             if not client:
-                return self._failWithReason('client not found', 404)
+                return self._failWithReason('client not found', error_code=404)
             success = client.uploadFile(path, file_bytes)
             if not success:
-                return self._failWithReason('upload failed on client', 504)
+                return self._failWithReason('upload failed on client', error_code=504)
             return jsonify({'request_status': 'ok'})
 
 
