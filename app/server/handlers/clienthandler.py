@@ -2,10 +2,11 @@ import threading
 import time
 import logging
 import base64
+import socket
 
 import constants
 from network.protocolconnection import ServerProtocolConnection
-import socket
+from server.handlers.clientutils import disable_timeout
 
 class FileTransferError(Exception):
     pass
@@ -30,7 +31,7 @@ class ClientHandler():
         try:
             resp_type, resp_contents = self.connection.invokeAction(actionType, data)
             if resp_type != 'pong':
-                raise ValueError('invalid response from client for ping: {resp_type}')
+                raise ValueError(f'invalid response from client for ping: {resp_type}: {resp_contents}')
             return True
         except ValueError as e:
             logging.warning(f'{self.connection.peerAddr} ({self.clientId}): Ping failed: {e}') 
@@ -48,6 +49,7 @@ class ClientHandler():
         except ValueError as e:
             logging.warning('{self.connection.peerAddr} ({self.clientId}): get_status failed: {e}') 
 
+    @disable_timeout()
     def getFile(self, path: str):
         actionType = 'get_file'
         data = {'path': path}
@@ -72,6 +74,17 @@ class ClientHandler():
         except FileTransferError as e:
             logging.info(f'{self.connection.peerAddr} ({self.clientId}): get_file failed (FileTransferError): {e}')
 
+    @disable_timeout()
+    def uploadFile(self, path: str, file_bytes: bytes):
+        try:
+            data = {'path': path, 'filedata': base64.b64encode(file_bytes).decode()}
+            resp_type, resp = self.connection.invokeAction('upload_file', data)
+            if resp_type != 'file_upload':
+                raise ValueError(f'invalid response type: {resp_type}')
+            return resp.get('status') == 'ok'
+        except Exception as e:
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): upload_file failed: {e}')
+
     def listDirectory(self, path: str) -> list | None:
         actionType = 'list_dir'
         data = {'path': path}
@@ -82,9 +95,31 @@ class ClientHandler():
             if resp_contents.get('status') != 'ok':
                 raise ValueError(f"list_dir failed: {resp_contents.get('status')}")
             return resp_contents['entries']
+        except ValueError as e:
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): list_dir failed (ValueError): {e}') 
         except Exception as e:
             logging.warning(f'{self.connection.peerAddr} ({self.clientId}): listDirectory failed: {e}')
-            return None
+
+    @disable_timeout()
+    def executeShellCommand(self, command: str, timeout=None):
+        actionType = 'shell_command'
+        if not timeout is None:
+            data = {'command': command, 'timeout': timeout}
+        else:
+            data = {'command': command}
+        try:
+            resp_type, resp_contents = self.connection.invokeAction(actionType, data)
+            if resp_type != 'shell_result':
+                raise ValueError(f'invalid response type from client for shell_command: {resp_type}')
+            if resp_contents.get('status') == 'timeout':
+                return resp_contents
+            if resp_contents.get('status') != 'ok':
+                raise ValueError(f'shell_command failed: {resp_contents.get("status")}')
+            return resp_contents
+        except ValueError as e:
+            logging.warning(f'{self.connection.peerAddr} ({self.clientId}): shell_command failed (ValueError): {e}') 
+        except Exception as e:
+            logging.error(f'{self.connection.peerAddr} ({self.clientId}): shell_command failed: {e}')
 
     def _keepAliveLoop(self, interval=constants.INTERVAL):
         if not self.connection.running:
@@ -107,3 +142,5 @@ class ClientHandler():
 
     def _startKeepAliveLoop(self):
         threading.Thread(target=self._keepAliveLoop, daemon=True).start()
+
+
