@@ -2,6 +2,7 @@ import logging
 import socket
 
 import config
+from config import ConfigError
 from client.clientconnection import ClientConnection
 from network.protocolconnection import ClientProtocolConnection, AuthenticationError
 
@@ -38,4 +39,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logging.info("Shutting down client, keyboard interrupt")
     except AuthenticationError:
+        pass
+    except ConfigError:
         pass

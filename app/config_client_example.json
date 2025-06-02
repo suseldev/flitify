@@ -1,0 +1,7 @@
+{
+    "server_address": "localhost",
+    "server_port": 36912,
+    "server_public_key_path": "pub_key.pem",
+    "client_id": "TEST-1",
+    "client_secret": "abcdefgh"
+}

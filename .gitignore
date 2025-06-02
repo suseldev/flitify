@@ -8,8 +8,11 @@ venv/
 build/
 dist/
 
+# Config
 .env
 .env.*
+config_client.json
+config_server.json
 
 # Temporary keys for testing purposes
 *.pem

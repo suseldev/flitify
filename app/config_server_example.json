@@ -1,0 +1,16 @@
+{
+	"flitify_server": {
+		"host": "127.0.0.1",
+		"port": 36912,
+		"private_key_path": "priv_key.pem",
+		"db_address": "localhost:27017",
+		"db_user": "flitify",
+		"db_password": "password",
+		"db_name": "flitify"
+	},
+	"api_server": {
+		"host": "localhost",
+		"port": 37012,
+		"secret": "SECRET123"
+	}
+}

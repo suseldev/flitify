@@ -1,6 +1,7 @@
 import config
+from config import ConfigError
 from server.flitifyserver import FlitifyServer
-from storage.dbhandler import DBHandler
+from storage.dbhandler import DBHandler, DBFailure
 from apiserver.apiserver import ApiServer
 
 import time
@@ -15,7 +16,7 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 
-
+logging.getLogger("pymongo").setLevel(logging.ERROR)
 
 def startFlitifyServer(servConfig, rsaKey):
     logger = logging.getLogger("flitify")
@@ -27,7 +28,11 @@ def startFlitifyServer(servConfig, rsaKey):
 
     host = servConfig['host']
     port = servConfig['port']
-    dbHandler = DBHandler()
+    dbAddress = servConfig['db_address']
+    dbUser = servConfig['db_user']
+    dbPassword = servConfig['db_password']
+    dbName = servConfig['db_name']
+    dbHandler = DBHandler(dbAddress, dbUser, dbPassword, dbName)
     server = FlitifyServer(host, port, rsaKey, dbHandler)
     server_thread = threading.Thread(target=server.start, name='FlitifyServer')
     server_thread.start()
@@ -54,8 +59,9 @@ def kill_on_exception(args):
 
 def main():
     try:
-        servConfig = config.loadServerConfig()
-        apiConfig = config.loadApiConfig()
+        lConfig = config.loadServerConfig()
+        servConfig = lConfig['flitify_server']
+        apiConfig = lConfig['api_server']
         rsaKey = open(servConfig['private_key_path'], 'rb').read()
         threading.excepthook = kill_on_exception
         flitifyServer = startFlitifyServer(servConfig, rsaKey)
