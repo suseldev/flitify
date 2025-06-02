@@ -4,7 +4,7 @@ import logging
 class ConfigError(Exception):
     pass
 
-def loadServerConfig(config_path='config_server.json'):
+def loadServerConfig(config_path):
     try:
         server_config = open(config_path, 'r').read()
         server_config = json.loads(server_config)

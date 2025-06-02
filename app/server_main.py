@@ -45,8 +45,15 @@ def startAPIServer(flitifyServer, apiConfig):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     logger.propagate = False
+    logger = logging.getLogger('apiserver')
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter("APIServer: [%(asctime)s] [%(levelname)s] %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.propagate = False
 
-    server = ApiServer(flitifyServer, host=apiConfig['host'], port=apiConfig['port'])
+
+    server = ApiServer(flitifyServer, host=apiConfig['host'], port=apiConfig['port'], secret=apiConfig['secret'])
     server_thread = threading.Thread(target=server.start, name='ApiServer')
     server_thread.start()
 
@@ -59,7 +66,8 @@ def kill_on_exception(args):
 
 def main():
     try:
-        lConfig = config.loadServerConfig()
+        configPath = os.getenv("FLITIFY_CONFIG_PATH", "config_server.json")
+        lConfig = config.loadServerConfig(configPath)
         servConfig = lConfig['flitify_server']
         apiConfig = lConfig['api_server']
         rsaKey = open(servConfig['private_key_path'], 'rb').read()

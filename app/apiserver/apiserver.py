@@ -6,11 +6,21 @@ from server.flitifyserver import FlitifyServer
 from server.handlers.clienthandler import FileTransferError
 
 class ApiServer:
-    def __init__(self, server:FlitifyServer, host='localhost', port=37012):
+    def __init__(self, server:FlitifyServer, host='localhost', port=37012, secret=None):
         self.fserver = server
         self.host = host
         self.port = port
         self.app = Flask(__name__)
+        self.api_secret = secret
+        self.logger = logging.getLogger('apiserver')
+        @self.app.before_request
+        def verify_api_secret():
+            if self.api_secret is None:
+                return
+            secret = request.headers.get('X-Api-Secret')
+            if secret != self.api_secret:
+                self.logger.warning(f"Unauthorized API access attempt from {request.remote_addr}")
+                return jsonify({'request_status': 'failed', 'reason': 'unauthorized'}), 401
         self._setup_routes()
 
     def _getClient(self, clientId):
