@@ -15,4 +15,21 @@ class LinuxAgent(OSAgent):
         return entries
 
     def getStatus(self):
-        pass
+        # TODO: Dummy data
+        return {
+            'uptime_seconds': 36812,
+            'current_user': 'jakub',
+            'cpu_usage': 34,
+            'memory_total': 8.00,
+            'memory_used': 3.62,
+            'disks': {
+                '/dev/sda1': {
+                    'used': 83.97,
+                    'total': 512
+                    }
+                },
+            'running_applications': {
+                    'chrome.exe': {'name': 'Google Chrome', 'open_windows': 2},
+                    'Codeblocks': {'name': 'CodeBlocks', 'open_windows': 1}
+                }
+        }

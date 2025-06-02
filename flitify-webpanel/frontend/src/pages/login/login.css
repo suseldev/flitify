@@ -1,0 +1,84 @@
+.login-page {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100vw;
+	height: 100vh;
+	font-family: 'Inter';
+}
+
+.login-form {
+	background-color: #1a182d;
+	padding: 64px;
+	border-radius: 12px;
+	box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 16px;
+	box-sizing: border-box;
+}
+.login-form .text-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 16px;
+}
+.login-form .flitify-name {
+	font-size: 48px;
+	margin: 0;
+	padding: 0;
+	font-weight: 500;
+}
+.login-form .page-name {
+	font-size: 24px;
+	color: #d6d6d6;
+	margin: 0;
+	padding: 0;
+	font-weight: 300;
+}
+.login-form input {
+	background-color: #2a2640;
+	color: white;
+	border: 1px solid #1d1a2d;
+	font-size: 16px;
+	text-align: center;
+	padding: 4px;
+	font-family: 'Inter';
+	font-weight: 400;
+	border-radius: 8px;
+}
+
+.login-form button {
+	cursor: pointer;
+	background-color: #302c49;
+	color: white;
+	border: none;
+	font-size: 16px;
+	font-family: 'Inter';
+	font-weight: 200;
+	padding: 8px;
+	padding-left: 24px;
+	padding-right: 24px;
+	border-radius: 8px;
+	box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+	transition: background-color 0.2s;
+}
+
+.login-form button:hover {
+	box-shadow: 0 0 16px rgba(0, 0, 0, 0.3);
+	background-color: #534f70;
+}
+.login-form .error-msg {
+	color: #ff9999;
+	font-weight: 300;
+	text-align: center;
+}
+
+@media only screen and (orientation: portrait), (max-width: 768px) {
+	.login-form {
+		height: 100%;
+		width: 100%;
+		justify-content: center;
+	}
+}

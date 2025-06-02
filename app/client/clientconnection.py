@@ -39,7 +39,7 @@ class ClientConnection():
                 case 'ping':
                     self.connection.sendResponse('pong', {})
                 case 'get_status':
-                    status_dict = {'cpu': 36, 'ram': 48}
+                    status_dict = self.osagent.getStatus()
                     self.connection.sendResponse('status', status_dict)
                 case 'list_dir':
                     path = commandData.get('path', '/')

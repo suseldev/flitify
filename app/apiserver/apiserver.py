@@ -42,8 +42,9 @@ class ApiServer:
 
         @self.app.route('/clients')
         def getOnlineClients():
-            clientList = self.fserver.getClientList()
-            return jsonify(clientList)
+            responseObj = {'status': 'ok', 'client_list': None}
+            responseObj['client_list'] = self.fserver.getClientList()
+            return jsonify(responseObj)
 
         @self.app.route('/<clientId>/status')
         def clientStatus(clientId: str):
