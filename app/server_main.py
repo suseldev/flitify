@@ -62,6 +62,7 @@ def main():
         startAPIServer(flitifyServer, apiConfig)
     except Exception as e:
         logging.critical(f"Cannot launch: {e}")
+        os._exit(1)
 
  
 if __name__ == "__main__":
