@@ -1,5 +1,4 @@
 from network.secureconnection import ServerSecureConnection, ClientSecureConnection, SecureConnection
-from storage.dbhandler import DBHandler
 import constants
 
 import logging
@@ -13,6 +12,7 @@ class AuthenticationError(Exception):
 
 class ServerProtocolConnection(ServerSecureConnection):
     def __init__(self, socket, peerAddr, rsaKey, dbHandler):
+        from storage.dbhandler import DBHandler
         super().__init__(socket, peerAddr, rsaKey)
         self.db = dbHandler
         self.clientId = None
