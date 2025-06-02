@@ -13,6 +13,7 @@ class ApiServer:
         self.app = Flask(__name__)
         self.api_secret = secret
         self.logger = logging.getLogger('apiserver')
+        # Verifier decorator
         @self.app.before_request
         def verify_api_secret():
             if self.api_secret is None:

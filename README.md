@@ -31,7 +31,8 @@ It is developed with security in mind, encrypting all communication between clie
 
 5. Configure server and client apps:
    ```
-   <config not implemented yet>
+   cp app/config_server_example.json app/config_server.json
+   vi app/config_server.json
    ```
    
 6. Start the Flitify server:
