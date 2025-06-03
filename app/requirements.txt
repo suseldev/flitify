@@ -3,3 +3,4 @@ waitress
 pycryptodome
 pytest
 pymongo
+psutil

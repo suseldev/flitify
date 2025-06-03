@@ -1,4 +1,7 @@
 import os
+import psutil
+import time
+import getpass
 from client.OSAgents.osagent import OSAgent
 
 class LinuxAgent(OSAgent):
@@ -15,21 +18,36 @@ class LinuxAgent(OSAgent):
         return entries
 
     def getStatus(self):
-        # TODO: Dummy data
+        uptime_seconds = time.time() - psutil.boot_time()
+        mem = psutil.virtual_memory()
+        memory_total_gb = round(mem.total / (1024 ** 3), 2)
+        memory_used_gb = round(mem.used / (1024 ** 3), 2)
+        cpu_usage = psutil.cpu_percent(interval=1)
+        disk_info = {}
+        for part in psutil.disk_partitions():
+            usage = psutil.disk_usage(part.mountpoint)
+            disk_info[part.device] = {
+                'used': round(usage.used / (1024 ** 3), 2),
+                'total': round(usage.total / (1024 ** 3), 2)
+        }
+        running_apps = {}
+        for proc in psutil.process_iter(['name', 'username']):
+            try:
+                if proc.info['username'] == getpass.getuser():
+                    name = proc.info['name']
+                    if name not in running_apps:
+                        running_apps[name] = {'name': name, 'open_windows': 1}
+                    else:
+                        running_apps[name]['open_windows'] += 1
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                continue
+
         return {
-            'uptime_seconds': 36812,
-            'current_user': 'jakub',
-            'cpu_usage': 34,
-            'memory_total': 8.00,
-            'memory_used': 3.62,
-            'disks': {
-                '/dev/sda1': {
-                    'used': 83.97,
-                    'total': 512
-                    }
-                },
-            'running_applications': {
-                    'chrome.exe': {'name': 'Google Chrome', 'open_windows': 2},
-                    'Codeblocks': {'name': 'CodeBlocks', 'open_windows': 1}
-                }
+            'uptime_seconds': int(uptime_seconds),
+            'current_user': getpass.getuser(),
+            'cpu_usage': cpu_usage,
+            'memory_total': memory_total_gb,
+            'memory_used': memory_used_gb,
+            'disks': disk_info,
+            'running_applications': running_apps
         }
