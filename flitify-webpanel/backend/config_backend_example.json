@@ -1,12 +1,12 @@
 {
 	"internal_api_host": "http://localhost:37012",
-	"internal_api_secret": "SECRET123",
+	"internal_api_secret": "<SECRET>",
 	"db_address": "localhost:27017",
-	"db_user": "flitify",
-	"db_password": "password",
+	"db_user": "<USER>",
+	"db_password": "<PASSWORD>",
 	"db_name": "flitify",
-	"host": "localhost",
+	"host": "<HOST>",
 	"port": 8372,
-	"jwt_secret": "CHANGEME",
+	"jwt_secret": "<SECRET>",
 	"jwt_expiration_seconds": 3600
 }
