@@ -18,6 +18,7 @@ function getUserName() {
 function Navbar(args) { 
 	const currentLocation = useLocation();
 	const currentView = currentLocation.pathname.split("/").filter(Boolean)[0] || "";;
+	const [userMenuOpen, setUserMenuOpen] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
 
 	return (
@@ -33,7 +34,13 @@ function Navbar(args) {
 			<li><Link to="/interact" className={`navbar-link ${currentView=='interact' ? 'active':''} `}>Interact</Link></li>
 			<li><Link to="/computers" className={`navbar-link ${currentView=='computers' ? 'active':''}`}>Computers</Link></li>
         </ul>
-		<a className="user" href="#">{getUserName()} <ChevronDown size={16} /> </a>
+		<div className="user-dropdown"><a className="user" href="#" onClick={(e) => {e.preventDefault(); setUserMenuOpen(prev => !prev);}}>{getUserName()} <ChevronDown size={16} /> </a>
+			{userMenuOpen && (
+				<ul className="user-menu">
+					<li><Link to="/logout">Log out</Link></li>
+				</ul>
+			)}
+		</div>
     </nav>
 		</>
 	)
