@@ -1,5 +1,5 @@
 from waitress import serve
-from flask import g, Flask, abort, jsonify, request, make_response
+from flask import g, Flask, abort, jsonify, request, make_response, Response
 import logging
 
 from server.flitifyserver import FlitifyServer
@@ -64,13 +64,15 @@ class ApiServer:
             if not filePath:
                 return self._failWithReason('invalid parameters for getfile', error_code=400)
             try:
-                file = client.getFile(filePath)
-                if not file:
+                fileContent = client.getFile(filePath)
+                if not fileContent:
                     return self._failWithReason('unknown', error_code=504)
             except FileTransferError as e:
                 return self._failWithReason('file transfer error', error_code=504)
             # Set response type to downloadable file
+            response = Response(fileContent)
             response.headers.set('Content-Type', 'application/octet-stream')
+            response.headers.set('Content-Disposition', f'attachment; filename="{filePath.split("/")[-1]}"')
             return response
 
         @self.app.route('/<clientId>/listdir')

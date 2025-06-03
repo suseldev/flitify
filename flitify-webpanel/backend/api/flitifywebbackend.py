@@ -110,7 +110,7 @@ class FlitifyWebBackend:
             headers['X-Api-Secret'] = self.internal_api_secret or ''
 
             try:
-                response = requests.request(
+                resp = requests.request(
                     method=request.method,
                     url=url,
                     headers=headers,
@@ -120,17 +120,19 @@ class FlitifyWebBackend:
                     params=request.args
                 )
                 try:
-                    content = response.json()
+                    content = resp.json()
                     if isinstance(content, dict):
                         content['proxy_status'] = 'ok'
-                        return make_response(jsonify(content), response.status_code)
+                        return make_response(jsonify(content), resp.status_code)
                 except ValueError:
                     pass
-                for key, value in response.headers.items():
-                    if key.lower() != 'content-encoding':
-                        proxy_response.headers[key] = value
-                return proxy_response
+                excluded_headers = {'content-encoding', 'transfer-encoding', 'connection', 'content-length'}
+                headers = [(k, v) for k, v in resp.headers.items() if k.lower() not in excluded_headers]
+        
+                response = Response(resp.content, resp.status_code, headers)
+                return response
             except Exception as e:
                 return jsonify({'proxy_status': 'failed'}), 500
+
     def start(self):
         serve(self.app, host=self.host, port=self.port)

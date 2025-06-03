@@ -3,6 +3,7 @@ import { ChevronRight, CircleX } from 'lucide-react';
 import fetchWithAuth from '../../utils/fetchWithAuth.js'
 import Navbar from '../../Components/Navbar.jsx'
 import StatusDashboard from './components/statusdashboard.jsx'
+import Files from './components/files.jsx'
 import './interact.css'
 
 function Interact() {
@@ -53,6 +54,7 @@ function Interact() {
 							))}
 						</div>
 						{selectedTab === "Status" && <StatusDashboard clientId={selectedClient} />}
+						{selectedTab === "Files" && <Files clientId={selectedClient} />}
 					</> ) : (
 						<div className="client-placeholder">
 							<p>Select a client to get started...</p>

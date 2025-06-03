@@ -93,8 +93,8 @@
 
 @media only screen and (orientation: portrait), (max-width: 640px) {
 	.navbar {
-		/* justify-content: center; */
 		align-items: flex-start;
+		align-content: center;
 		padding-top: 8px;
 		flex-direction: column;
 		background-color: var(--color-navbar-bg-mobile-active);

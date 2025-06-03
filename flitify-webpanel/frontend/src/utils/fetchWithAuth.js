@@ -4,7 +4,6 @@ export default async function fetchWithAuth(url, options = {}) {
 	const headers = {
 		...options.headers,
 		Authorization: `Bearer ${token}`,
-		'Content-Type': 'application/json',
 	};
 	const response = await fetch(url, {
 		...options,
