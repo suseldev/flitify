@@ -22,16 +22,18 @@ SERVER_CFG_TEMPLATE = BASE / "app" / "config_server_example.json"
 BACKEND_CFG_TEMPLATE = BASE / "flitify-webpanel" / "backend" / "config_backend_example.json"
 SERVER_CFG = BASE / "app" / "config_server.json"
 BACKEND_CFG = BASE / "flitify-webpanel" / "backend" / "config_backend.json"
+PRIV_KEY_PATH = BASE / "app" / "priv_key.pem"
+PUB_KEY_PATH = BASE / "app" / "pub_key.pem"
 ENV_PATH = BASE / ".env.generated"
 
 
 with open(SERVER_CFG_TEMPLATE) as f:
     server_cfg = json.load(f)
 
-print(server_cfg)
 server_cfg["flitify_server"]["db_user"] = MONGO_USER
 server_cfg["flitify_server"]["db_password"] = MONGO_PASS
 server_cfg["flitify_server"]["db_address"] = "mongo:27017" # docker hostname
+server_cfg["flitify_server"]["private_key_path"] = "/shared/priv_key.pem"
 server_cfg["api_server"]["secret"] = API_SECRET
 
 with open(SERVER_CFG, "w") as f:
