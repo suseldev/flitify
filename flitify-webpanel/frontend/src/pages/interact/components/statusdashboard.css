@@ -10,6 +10,7 @@
 	display: flex;
 	height: 100%;
 	width: 100%;
+	box-sizing: border-box;
 }
 .status-grid {
 	box-sizing: border-box;
@@ -18,8 +19,8 @@
 	display: grid;
 	grid-template-columns: repeat(2, 1fr);
 	gap: 24px;
-	font-family: 'Inter';
 	padding: 24px;
+	font-family: 'Inter';
 }
 
 .status-card {

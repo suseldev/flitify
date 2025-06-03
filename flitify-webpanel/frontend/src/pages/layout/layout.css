@@ -1,3 +1,6 @@
+* {
+	box-sizing: border-box;
+}
 .page-content { 
 	padding-top: var(--max-navbar-height);
 	margin: 0;
