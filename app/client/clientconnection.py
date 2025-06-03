@@ -91,6 +91,7 @@ class ClientConnection():
     def saveFile(self, path: str, base64data: str):
         try:
             file_bytes = base64.b64decode(base64data)
+            #TODO: Reject file if exists
             with open(path, 'wb') as f:
                 f.write(file_bytes)
             self.connection.sendResponse('file_upload', {'status': 'ok'})
