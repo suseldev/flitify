@@ -9,6 +9,9 @@ import logging
 import threading
 import os
 import traceback
+import signal
+
+shutdownEvent = threading.Event()
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -34,7 +37,7 @@ def startFlitifyServer(servConfig, rsaKey):
     dbName = servConfig['db_name']
     dbHandler = DBHandler(dbAddress, dbUser, dbPassword, dbName)
     server = FlitifyServer(host, port, rsaKey, dbHandler)
-    server_thread = threading.Thread(target=server.start, name='FlitifyServer')
+    server_thread = threading.Thread(target=server.start, name='FlitifyServer', daemon=True)
     server_thread.start()
     return server
 
@@ -54,8 +57,12 @@ def startAPIServer(flitifyServer, apiConfig):
 
 
     server = ApiServer(flitifyServer, host=apiConfig['host'], port=apiConfig['port'], secret=apiConfig['secret'])
-    server_thread = threading.Thread(target=server.start, name='ApiServer')
+    server_thread = threading.Thread(target=server.start, name='ApiServer', daemon=True)
     server_thread.start()
+
+def graceful_shutdown(signum, frame):
+    logging.info("[*] Shutting down servers")
+    shutdownEvent.set()
 
 def kill_on_exception(args):
     if args.thread.name not in ['FlitifyServer', 'ApiServer', 'FlitifyServer-Watchdog']:
@@ -65,6 +72,8 @@ def kill_on_exception(args):
     os._exit(1)
 
 def main():
+    signal.signal(signal.SIGINT, graceful_shutdown)
+    signal.signal(signal.SIGTERM, graceful_shutdown)
     try:
         configPath = os.getenv("FLITIFY_CONFIG_PATH", "config_server.json")
         lConfig = config.loadServerConfig(configPath)
@@ -74,6 +83,7 @@ def main():
         threading.excepthook = kill_on_exception
         flitifyServer = startFlitifyServer(servConfig, rsaKey)
         startAPIServer(flitifyServer, apiConfig)
+        shutdownEvent.wait()
     except Exception as e:
         logging.critical(f"Cannot launch: {e}")
         os._exit(1)

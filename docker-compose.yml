@@ -1,0 +1,62 @@
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: flitify-mongo
+    env_file:
+      - .env
+    volumes:
+      - mongo_data:/data/db
+    expose:
+      - "27017:27017"
+
+  flitify-server:
+    build:
+      dockerfile: app/Dockerfile
+    container_name: flitify-server
+    depends_on:
+      - mongo
+    volumes:
+      - keys:/keys
+    command: bash -c "python3 crypto/utils/rsakeyutils.py /keys/ && python3 server_main.py"
+    env_file:
+      - .env
+    ports:
+      - "36912:36912"
+    expose:
+      - "37012:37012"
+
+  flitify-backend:
+    build:
+      dockerfile: flitify-webpanel/backend/Dockerfile
+    container_name: flitify-backend
+    depends_on:
+      - mongo
+    env_file:
+      - .env
+    expose:
+      - "8000:8000"
+
+  flitify-frontend-builder:
+    build:
+      context: ./flitify-webpanel/frontend
+      dockerfile: Dockerfile
+    container_name: flitify-frontend-builder
+    volumes:
+      - frontend_build:/build/dist
+
+  flitify-nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+    container_name: flitify-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - flitify-frontend-builder
+    volumes:
+      - frontend_build:/usr/share/nginx/html
+volumes:
+  keys:
+  mongo_data:
+  frontend_build:

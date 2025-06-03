@@ -1,7 +1,8 @@
 from waitress import serve
-from flask import g, Flask, abort, jsonify, request, make_response, Response
+from flask import g, Flask, abort, jsonify, request, make_response, Response, send_file
 import logging
 import os
+from Crypto.PublicKey import RSA
 
 from server.flitifyserver import FlitifyServer
 from server.handlers.clienthandler import FileTransferError
@@ -40,6 +41,14 @@ class ApiServer:
         @self.app.route('/')
         def index():
             return jsonify({'request_status': 'ok', 'details': 'api server online'})
+
+        @self.app.route('/getkey')
+        def getKey():
+            key = RSA.importKey(self.fserver.rsaKey).public_key().export_key()
+            response = Response(key)
+            response.headers.set('Content-Type', 'application/octet-stream')
+            response.headers.set('Content-Disposition', f'attachment; filename="pub_key.pem"')
+            return response
 
         @self.app.route('/clients')
         def getOnlineClients():

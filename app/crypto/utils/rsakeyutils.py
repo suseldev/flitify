@@ -25,12 +25,17 @@ def main():
         print(f"Usage: python {sys.argv[0]} <directory to store RSA keys>")
         sys.exit(1)
     dirname = sys.argv[1]
+    PRIV_KEY_PATH = dirname + '/priv_key.pem'
+    PUB_KEY_PATH = dirname + '/pub_key.pem'
+    if os.path.exists(PRIV_KEY_PATH) and os.path.exists(PUB_KEY_PATH):
+        print("[I] RSA keys already exist, skipping generation")
+        return
     if os.path.isdir(dirname):
-        print("Generating RSA keys...")
+        print("[*] Generating RSA keys")
         generateRsaKeypair(dirname + '/priv_key.pem', dirname + '/pub_key.pem')
-        print("RSA keys generated")
+        print("[+] RSA keys generated")
     else:
-        print(f"Invalid path: {dirname}")
+        print(f"[!] Invalid path: {dirname}")
 
 if __name__ == "__main__":
     main()

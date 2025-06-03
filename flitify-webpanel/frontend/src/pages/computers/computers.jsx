@@ -53,6 +53,21 @@ function Computers() {
 	};
 
 
+	const downloadKey = () => {
+		fetchWithAuth(`/api/proxy/getkey`).then(response => {
+			if(!response.ok) throw new Error("Failed to get key");
+			return response.blob();
+		}).then(blob => {
+			const link = document.createElement('a');
+			link.href = URL.createObjectURL(blob);
+			link.download = "pub_key.pem";
+			document.body.appendChild(link);
+			link.click();
+			link.remove();
+		}).catch(() => {
+			alert("Failed to download key!");
+		})
+	}
 	const addNewClient = () => {
 		const client_id = prompt("Enter new client ID:");
 		if (!client_id) return;
@@ -86,7 +101,10 @@ function Computers() {
 		<div className="computers-page">
 			<div className="page-header">
 				<span className="page-name">Registered clients list</span>
-				<a href="" className="add-button" onClick={(e) => {e.preventDefault(); addNewClient();}}>+ Add new client</a>
+				<div className="buttons">
+					<a href="" className="dw-button" onClick={(e) => {e.preventDefault(); downloadKey();}}>Download key</a>
+					<a href="" className="add-button" onClick={(e) => {e.preventDefault(); addNewClient();}}>+ Add new client</a>
+				</div>
 			</div>
 			{error && <p className="error-msg">{error}</p>}
 			<table className="computers-table">

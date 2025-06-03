@@ -23,6 +23,7 @@ class SecureConnection(BaseConnection):
     def __init__(self, socket, peerAddr, rsaKey):
         super().__init__(socket, peerAddr)
         self.rsa = cryptohelper.CryptoHelperRSA(rsaKey)
+        self.rsaKey = rsaKey
         self.aes = None
         self._performKeyExchange()
 

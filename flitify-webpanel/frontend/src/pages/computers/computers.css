@@ -40,10 +40,20 @@
 	box-sizing: border-box;
 	margin-bottom: 8px;
 }
+.computers-page .page-header .buttons {
+	margin-left: auto;
+}
 .computers-page .page-header .add-button {
 	color: white;
 	text-decoration: none;
 	margin-left: auto;
+	transition: color 0.3s;
+}
+.computers-page .page-header .dw-button {
+	color: white;
+	text-decoration: none;
+	margin-left: auto;
+	margin-right: 8px;
 	transition: color 0.3s;
 }
 .computers-page .page-header .add-button:hover {
