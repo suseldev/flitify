@@ -1,6 +1,7 @@
 from waitress import serve
 from flask import g, Flask, abort, jsonify, request, make_response, Response
 import logging
+import os
 
 from server.flitifyserver import FlitifyServer
 from server.handlers.clienthandler import FileTransferError
@@ -11,7 +12,7 @@ class ApiServer:
         self.host = host
         self.port = port
         self.app = Flask(__name__)
-        self.api_secret = secret
+        self.api_secret = secret or os.getenv("API_SECRET", None)
         self.logger = logging.getLogger('apiserver')
         # Verifier decorator
         @self.app.before_request
