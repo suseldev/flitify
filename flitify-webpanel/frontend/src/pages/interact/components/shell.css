@@ -1,0 +1,62 @@
+:root {
+	--terminal-card-bg: black;
+	--command-input-bg: #050317;
+}
+
+.shell {
+	display: flex;
+	height: 100%;
+	width: 100%;
+	box-sizing: border-box;
+	align-content: center;
+	align-items: center;
+	justify-content: center;
+	font-family: 'Inter';
+}
+.shell .shell-card {
+	width: 90%;
+	height: 90%;
+	box-sizing: border-box;
+	background-color: var(--terminal-card-bg);
+	border-radius: 24px;
+	display: flex;
+	flex-direction: column;
+	max-height: 90%;
+	flex-shrink: 1;
+}
+
+.shell .shell-card .terminal {
+	border: none;
+	border-radius: 24px;
+	background-color: black;
+	color: white;
+	font-family: monospace;
+	white-space: pre-wrap;
+	padding: 12px;
+	box-sizing: border-box;
+	display: flex;
+	flex-shrink: 1;
+	overflow-y: auto;
+	max-height: 95%;
+}
+
+.shell .shell-card .prompt {
+	padding-left: 12px;
+	font-family: monospace;
+}
+
+.shell .shell-card input {
+	background-color: black;
+	border: none;
+	color: white;
+	font-family: monospace;
+	box-sizing: border-box;
+	border-radius: 12px;
+	margin-bottom: auto;
+	padding-right: 12px;
+	padding-top: 0;
+}
+
+.shell .shell-card input:focus {
+	outline: none;
+}

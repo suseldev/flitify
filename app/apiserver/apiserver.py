@@ -102,7 +102,7 @@ class ApiServer:
             if commandResponse is None:
                 return self._failWithReason('client shell_command failed', error_code=504)
             responseObj = {'stdout': commandResponse.get('stdout'), 'stderr': commandResponse.get('stderr')}
-            return jsonify({'request_status': 'ok', 'command_response': commandResponse})
+            return jsonify({'request_status': 'ok', 'command_response': responseObj})
 
         @self.app.route('/<clientId>/uploadfile', methods=['POST'])
         def uploadFile(clientId: str):

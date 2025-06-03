@@ -4,6 +4,7 @@ import fetchWithAuth from '../../utils/fetchWithAuth.js'
 import Navbar from '../../Components/Navbar.jsx'
 import StatusDashboard from './components/statusdashboard.jsx'
 import Files from './components/files.jsx'
+import Shell from './components/shell.jsx'
 import './interact.css'
 
 function Interact() {
@@ -55,6 +56,7 @@ function Interact() {
 						</div>
 						{selectedTab === "Status" && <StatusDashboard clientId={selectedClient} />}
 						{selectedTab === "Files" && <Files clientId={selectedClient} />}
+						{selectedTab === "Shell" && <Shell clientId={selectedClient} />}
 					</> ) : (
 						<div className="client-placeholder">
 							<p>Select a client to get started...</p>
