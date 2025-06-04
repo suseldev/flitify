@@ -8,7 +8,7 @@ services:
     volumes:
       - mongo_data:/data/db
     expose:
-      - "27017"
+      - "27017:27017"
 
   flitify-server:
     build:
@@ -24,7 +24,7 @@ services:
     ports:
       - "36912:36912"
     expose:
-      - "37012"
+      - "37012:37012"
 
   flitify-backend:
     build:
@@ -35,7 +35,7 @@ services:
     env_file:
       - .env
     expose:
-      - "8000"
+      - "8000:8000"
 
   flitify-frontend-builder:
     build:
