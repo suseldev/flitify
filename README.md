@@ -10,10 +10,10 @@
     - Internal Flask API served via Waitress, secured by a secret token and isolated from public access. All requests are routed through a web backend proxy with user login and JWT-based session handling.
     -  Internal control layer is not exposed externally; only the proxy can interact with it.
 - **Admin Web Panel (React)**
-- Complete authentication-gated UI offering:
-    -   Client status overview      
-    -   File browser interface
-    -   Pseudo-interactive command shell
+    - Complete authentication-gated UI offering:
+        -   Client status overview      
+        -   File browser interface
+        -   Pseudo-interactive command shell
  
 ## ⚡ Quickstart 
 ### Docker (recommended)
