@@ -31,6 +31,7 @@ docker-compose up --build
 3) Start the client app:
 ```
 cp config_client_example.json config_client.json
+vi config_client.json
 python3 client_main.py
 ```
 >  **Note:** A standalone Windows executable client is planned for future releases.
@@ -92,6 +93,7 @@ npm run dev # Start the development server
 9) *(Optional)* Add a client in the web panel and start it:
 ```bash
 cp config_client_example.json config_client.json
+vi config_client.json
 python3 client_main.py
 ```
 ## 📌 Roadmap / TODO
