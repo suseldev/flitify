@@ -98,6 +98,7 @@ python3 client_main.py
 - [ ] Role-based access controls
 - [ ] Administrator user management panel
 - [ ] Client grouping feature (e.g., assign multiple computers into groups with shared access permissions)
+- [ ] Documentation
 
 ## ⚠️ Disclaimer
 Flitify was originally developed as an internal tool. While it includes client authentication mechanisms, these can be easily disabled.
