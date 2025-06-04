@@ -1,4 +1,4 @@
-# Flitify
+# 📦 Flitify
 *Secure, modular remote computer management tool*
 
 **Flitify** is a secure and modular remote client management system, built around a custom encrypted TCP protocol. It features a modern React-based admin panel, Flask backend, and fully Dockerized deployment for ease of setup and use.
