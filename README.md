@@ -3,6 +3,8 @@
 
 **Flitify** is a secure and modular remote client management system, built around a custom encrypted TCP protocol. It features a modern React-based admin panel, Flask backend, and fully Dockerized deployment for ease of setup and use.
 
+![Banner](https://github.com/xxSusel/flitify/blob/main/banner.png?raw=true)
+
 ## ✨ Features
 - **Custom encrypted protocol**
    - Built from scratch over TCP, using AES encryption, secure key exchange, and per-client authentication.
