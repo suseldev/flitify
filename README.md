@@ -95,7 +95,7 @@ cp config_client_example.json config_client.json
 python3 client_main.py
 ```
 ## 📌 Roadmap / TODO
-- [ ] Role-based access controlk
+- [ ] Role-based access controls
 - [ ] Administrator user management panel
 - [ ] Client grouping feature (e.g., assign multiple computers into groups with shared access permissions)
 
