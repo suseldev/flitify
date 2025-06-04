@@ -21,7 +21,7 @@
 ### Docker (recommended)
 Flitify is packaged as a Docker container using **nginx** as the reverse proxy and static frontend host. The **frontend is automatically built** during the Docker image build process.
 ```bash
-git clone https://github.com/xxSusel/flitify.git
+git clone https://github.com/suseldev/flitify.git
 cd flitify
 python3 docker/generate_all_config.py # Generate config, set admin username and password
 docker-compose up --build
@@ -42,7 +42,7 @@ python3 client_main.py
 > **Important:** Ensure you have a working **MongoDB** instance before proceeding.
 1) Clone the repository
 ```bash
-git clone https://github.com/xxSusel/flitify.git
+git clone https://github.com/suseldev/flitify.git
 cd flitify
 ```
 
