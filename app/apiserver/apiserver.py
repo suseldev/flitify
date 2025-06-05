@@ -9,6 +9,15 @@ from server.handlers.clienthandler import FileTransferError
 
 class ApiServer:
     def __init__(self, server:FlitifyServer, host='localhost', port=37012, secret=None):
+        """
+        Initializes the internal API server.
+
+        Args:
+            server (FlitifyServer): An instance of FlitifyServer managing connected clients.
+            host (str): Host address to bind the server to (defaults to 'localhost'). WARNING! Do not expose to public networks.
+            port (int): Port number to listen to (defaults to 37012).
+            secret (str, optional): API secret for request authentication.
+        """
         self.fserver = server
         self.host = host
         self.port = port
@@ -27,17 +36,36 @@ class ApiServer:
         self._setup_routes()
 
     def _getClient(self, clientId):
+        """
+        Retrieves a client instance by its identifier.
+
+        Args:
+            clientId (str): ID of the client.
+
+        Returns:
+            ClientHandler or None: The ClientHandler for a specific client if found, otherwise None.
+        """
         client = self.fserver.getClientById(clientId)
         if client:
             return client.getClient()
         return None
 
     def _failWithReason(self, reason, error_code=400):
+        """
+        Constructs an error response with a given reason.
+
+        Args:
+            reason (str): Explanation of the error
+            error_code (int): HTTP status code to return (defaults to 400).
+        """
         response = jsonify({'request_status': 'failed', 'reason': reason})
         response.status_code = error_code
         return response
 
     def _setup_routes(self):
+        """
+        Sets up the API endpoint routes
+        """
         @self.app.route('/')
         def index():
             return jsonify({'request_status': 'ok', 'details': 'api server online'})
@@ -129,7 +157,8 @@ class ApiServer:
                 return self._failWithReason('upload failed on client', error_code=504)
             return jsonify({'request_status': 'ok'})
 
-
-
     def start(self):
+        """
+        Starts the API server using the Waitress WSGI server.
+        """
         serve(self.app, host=self.host, port=self.port)

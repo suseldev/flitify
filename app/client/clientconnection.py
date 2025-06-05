@@ -11,6 +11,15 @@ DEFAULT_TIMEOUT=5
 
 class ClientConnection():
     def __init__(self, connection:ClientProtocolConnection):
+        """
+        Initializes a client connection and starts the action loop.
+        
+        Args:
+            connection (ClientProtocolConnection): The active protocol connection.
+
+        Raises:
+            NotImplementedError: If the client's os is unsupported / not yet implemented.
+        """
         self.connection = connection
         self.logger = logging.getLogger("flitifyclient")
         match platform.system():
@@ -23,6 +32,10 @@ class ClientConnection():
         self._actionLoop()
 
     def _actionLoop(self):
+        """
+        Main loop for receiving and handling actions sent from the server.
+        Runs until connection is closed or a fatal error occurs.
+        """
         while True:
             if not self.connection.running:
                 self.logger.error(f'{self.connection.peerAddr}: connection closed during actionLoop')
@@ -66,6 +79,15 @@ class ClientConnection():
                     self.connection.sendResponse('invalid_action', {})
 
     def getDirectoryListing(self, path:str):
+        """
+        Sends a directory listing for the specified path to the server.
+
+        Args:
+            path (str): Filesystem path to list.
+
+        Sends:
+            'list_dir' response containing either a lit of entries or an error status
+        """
         try:
             entries = self.osagent.getDirectoryListing(path)
             self.connection.sendResponse('list_dir', {'status': 'ok', 'entries': entries})
@@ -89,6 +111,16 @@ class ClientConnection():
             self.logger.warning(f'{self.connection.peerAddr}: file_send failed: {e}')
 
     def saveFile(self, path: str, base64data: str):
+        """
+        Saves a file received from the server to the specified path.
+
+        Args:
+            path (str): Destination path for the file.
+            base64data (str): File contents encoded in base64.
+
+        Sends:
+            'file_upload' response with status 'ok', 'file_exists', or 'failed'.
+        """
         try:
             file_bytes = base64.b64decode(base64data)
             if os.path.exists(path):
@@ -102,6 +134,16 @@ class ClientConnection():
             self.logger.warning(f'{self.connection.peerAddr}: file_upload failed: {e}')
 
     def executeShellCommand(self, command: str, timeout=DEFAULT_TIMEOUT):
+        """
+        Executes a shell command and sends the result back to the server.
+
+        Args:
+            command (str): The shell command to execute.
+            timeout (int): Maximum time in seconds before the command is forcibly terminated.
+
+        Sends:
+            'shell_result' response with command output, error stream, and exit code.
+        """
         try:
             result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=timeout)
             self.connection.sendResponse('shell_result', {'status': 'ok', 'stdout': result.stdout, 'stderr': result.stderr, 'exitcode': result.returncode})

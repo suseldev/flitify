@@ -9,7 +9,20 @@ from network.protocolconnection import ServerProtocolConnection
 import constants
 
 class ClientThread(threading.Thread):
+    """
+    Represents a dedicated thread handling a single client connection.
+    Responsible for initializing the secure protocol connection and the client handler.
+    """
     def __init__(self, socket, peerAddr, rsaKey, dbHandler):
+        """
+        Initializes the client thread.
+
+        Args:
+            socket (socket.socket): The socket object for communication.
+            peerAddr (tuple): IP address and port of the connecting client.
+            rsaKey: Server RSA private key used for secure communication.
+            dbHandler: Database handler for retrieving authentication secrets.
+        """
         self.socket = socket
         self.peerAddr = peerAddr
         self.rsaKey = rsaKey
@@ -19,15 +32,33 @@ class ClientThread(threading.Thread):
         super().__init__()
 
     def getClient(self):
-         return self.client
+        """
+        Returns the initialized client handler.
+
+        Returns:
+            ClientHandler or None: The associated client handler, if initialized.
+        """
+        return self.client
 
     def run(self):
+        """
+        Starts the thread.
+        """
         self.logger.debug(f'{self.peerAddr[0]}:{self.peerAddr[1]}: Starting thread')
         self.connection = ServerProtocolConnection(self.socket, self.peerAddr, self.rsaKey, self.dbHandler)
         self.client = ClientHandler(self.connection)
 
 class FlitifyServer:
     def __init__(self, host, port, rsaKey, dbHandler):
+        """
+        Initializes the server with specified configuration and starts the watchdog thread.
+
+        Args:
+            host (str): The host IP or hostname to bind the server socket to.
+            port (int): Port number to listen on.
+            rsaKey: RSA private key used to establish secure communication.
+            dbHandler: Database handler for client authentication data.
+        """
         self.host = host
         self.port = port
         self.dbHandler = dbHandler
@@ -42,17 +73,35 @@ class FlitifyServer:
         self.logger = logging.getLogger('flitify')
     
     def getClientList(self) -> list:
+        """
+        Retrieves a list of currently active client IDs.
+
+        Returns:
+            list: A list of active client identifiers.
+        """
         clientList = [] 
         for client in self.activeClients.keys():
             clientList.append(client)
         return clientList
         
     def getClientById(self, clientId:str) -> ClientHandler | None:
+        """
+        Retrieves a client handler by its unique identifier.
+
+        Args:
+            clientId (str): The identifier of the client.
+
+        Returns:
+            ClientHandler or None: The associated client handler, or None if not found.
+        """
         if clientId not in self.activeClients:
             return None
         return self.activeClients[clientId]
 
     def start(self):
+        """
+        Starts the server.
+        """
         self.sock.bind((self.host, self.port))
         self.sock.listen()
         self.running = True

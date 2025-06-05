@@ -22,6 +22,16 @@ logging.basicConfig(
 logging.getLogger("pymongo").setLevel(logging.ERROR)
 
 def startFlitifyServer(servConfig, rsaKey):
+    """
+    Initializes and starts the Flitify server in a separate daemon thread.
+
+    Args:
+        servConfig (dict): Configuration dictionary for the Flitify server, including host, port, and database settings.
+        rsaKey (bytes): RSA private key used for secure communication with clients.
+
+    Returns:
+        FlitifyServer: The initialized Flitify server instance.
+    """
     logger = logging.getLogger("flitify")
     handler = logging.StreamHandler()
     formatter = logging.Formatter("FlitifyServer: [%(asctime)s] [%(levelname)s] %(message)s", datefmt='%Y-%m-%d %H:%M:%S')
@@ -42,6 +52,13 @@ def startFlitifyServer(servConfig, rsaKey):
     return server
 
 def startAPIServer(flitifyServer, apiConfig):
+    """
+    Initializes and starts the API server in a separate daemon thread.
+
+    Args:
+        flitifyServer (FlitifyServer): Reference to the running Flitify server instance.
+        apiConfig (dict): Configuration dictionary for the API server, including host, port, and API secret.
+    """
     logger = logging.getLogger('waitress')
     handler = logging.StreamHandler()
     formatter = logging.Formatter("APIServer: [%(asctime)s] [%(levelname)s] %(message)s")
@@ -61,10 +78,28 @@ def startAPIServer(flitifyServer, apiConfig):
     server_thread.start()
 
 def graceful_shutdown(signum, frame):
+    """
+    Handles OS signals (SIGINT, SIGTERM) for graceful server shutdown.
+
+    Sets a shutdown event that allows running threads to exit cleanly.
+    
+    Args:
+        signum (int): Signal number.
+        frame (frame object): Current stack frame (not used).
+    """
     logging.info("[*] Shutting down servers")
     shutdownEvent.set()
 
 def kill_on_exception(args):
+    """
+    Custom exception hook for critical server threads.
+
+    If a monitored thread (FlitifyServer, ApiServer, or Watchdog) crashes,
+    logs the error and immediately terminates the process.
+
+    Args:
+        args (threading.ExceptHookArgs): Exception information passed by the thread.
+    """
     if args.thread.name not in ['FlitifyServer', 'ApiServer', 'FlitifyServer-Watchdog']:
         return
     logging.critical(f"Thread {args.thread.name} stopped, stopping server {args.exc_type.__name__}: {args.exc_value}")
@@ -72,6 +107,11 @@ def kill_on_exception(args):
     os._exit(1)
 
 def main():
+    """
+    Entry point for launching the Flitify Server.
+
+    On failure, logs a critical error and exits the process.
+    """
     signal.signal(signal.SIGINT, graceful_shutdown)
     signal.signal(signal.SIGTERM, graceful_shutdown)
     try:
