@@ -8,7 +8,7 @@ import datetime
 import logging
 
 class FlitifyWebBackend:
-    def __init__(self, dbHandler, jwt_secret:str, jwt_expiration_seconds:int, internal_api_host="http://localhost:37012", internal_api_secret=None, host="localhost", port="2137"):
+    def __init__(self, dbHandler, jwt_secret:str, jwt_expiration_seconds:int, internal_api_host="http://localhost:37012", internal_api_secret=None, host="localhost", port=8000):
         self.host = host
         self.port = port
         self.app = Flask(__name__)
@@ -57,6 +57,7 @@ class FlitifyWebBackend:
         @self.app.route('/api/allclients', methods=['GET'])
         @self.jwt_required
         def list_clients():
+            # TODO: Move logic to the DBHandler
             clients = list(self.dbHandler.secretsCollection.find({}, {"_id": 0}))
             return jsonify({'clients': clients})
 
