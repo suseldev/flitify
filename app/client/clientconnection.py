@@ -6,6 +6,7 @@ import subprocess
 
 from network.protocolconnection import ClientProtocolConnection
 from client.OSAgents.linux import LinuxAgent
+from client.OSAgents.windows import WindowsAgent
 
 DEFAULT_TIMEOUT=5
 
@@ -26,7 +27,7 @@ class ClientConnection():
             case "Linux":
                 self.osagent = LinuxAgent()
             case "Windows":
-                raise NotImplementedError("WindowsAgent not yet implemented")
+                self.osagent = WindowsAgent()
             case _:
                 raise NotImplementedError(f"Unsupported OS: {platform.system()}")
         self._actionLoop()
