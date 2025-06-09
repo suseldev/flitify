@@ -75,6 +75,9 @@ class DBHandler:
         )
         return result.modified_count > 0
 
+    def getAllClientsWithSecrets(self) -> list:
+        return list(self.dbHandler.secretsCollection.find({}, {"_id": 0}))
+
     def _hash_password(self, password:str, salt:bytes) -> str:
         hashed = hashlib.scrypt(password.encode(), salt=salt, n=16384, r=8, p=1, dklen=64)
         return base64.b64encode(hashed).decode()

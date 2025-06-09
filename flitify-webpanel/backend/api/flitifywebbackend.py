@@ -58,7 +58,7 @@ class FlitifyWebBackend:
         @self.jwt_required
         def list_clients():
             # TODO: Move logic to the DBHandler
-            clients = list(self.dbHandler.secretsCollection.find({}, {"_id": 0}))
+            clients = self.dbHandler.getAllClientsWithSecrets()
             return jsonify({'clients': clients})
 
         @self.app.route('/api/allclients', methods=['POST'])
