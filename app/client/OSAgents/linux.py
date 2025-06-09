@@ -2,9 +2,15 @@ import os
 import psutil
 import time
 import getpass
+import logging
+
 from client.OSAgents.osagent import OSAgent
 
 class LinuxAgent(OSAgent):
+    def __init__(self):
+        self.logger = logging.getLogger('flitify')
+        self.logger.warning("Linux support is currently in development stage, there's no way to run FlitifyClient as a service!")
+
     def getDirectoryListing(self, path:str) -> list:
         if not os.path.isdir(path):
             raise FileNotFoundError(f'{path} is not a directory')

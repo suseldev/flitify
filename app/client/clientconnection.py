@@ -10,6 +10,9 @@ from client.OSAgents.windows import WindowsAgent
 
 DEFAULT_TIMEOUT=5
 
+class ConnectionKickedError(Exception):
+    pass
+
 class ClientConnection():
     def __init__(self, connection:ClientProtocolConnection):
         """
@@ -48,6 +51,7 @@ class ClientConnection():
                     if 'reason' not in commandData:
                         raise ValueError('kicked without reason')
                     self.logger.error(f"{self.connection.peerAddr}: kicked by server: {commandData['reason']}")
+                    raise ConnectionKickedError(commandData['reason'])
                     self.connection.closeConnection()
                     return
                 case 'ping':
