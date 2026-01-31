@@ -1,11 +1,11 @@
-# 📦 Flitify
+# Flitify
 *Secure, modular remote computer management tool*
 
 **Flitify** is a secure and modular remote client management system, built around a custom encrypted TCP protocol. It features a modern React-based admin panel, Flask backend, and fully Dockerized deployment.
 
 ![Banner](https://github.com/suseldev/flitify/blob/main/banner.png?raw=true)
 
-## ✨ Features
+## Features
 - **Custom encrypted protocol**
    - Built from scratch over TCP, using AES encryption, secure key exchange, and per-client authentication.
 - **Modern API architecture**
@@ -17,7 +17,7 @@
         -   File browser interface
         -   Pseudo-interactive command shell
  
-## ⚡ Quickstart 
+## Quickstart 
 ### Docker (recommended)
 Flitify is packaged as a Docker container using **nginx** as the reverse proxy and static frontend host. The **frontend is automatically built** during the Docker image build process.
 ```bash
@@ -98,13 +98,13 @@ cp config_client_example.json config_client.json
 vi config_client.json
 python3 client_main.py
 ```
-## 📌 Roadmap / TODO
+## Roadmap / TODO
 - [ ] Role-based access controls
 - [ ] Administrator user management panel
 - [ ] Client grouping feature (e.g., assign multiple computers into groups with shared access permissions)
 - [ ] Documentation
 
-## ⚠️ Disclaimer
+## Disclaimer
 Flitify was originally developed as an internal tool. While it includes client authentication mechanisms, these can be easily disabled.
  > Do not use this tool for malicious purposes.
 
