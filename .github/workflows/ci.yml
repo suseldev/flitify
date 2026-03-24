@@ -1,0 +1,75 @@
+name: CI
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install app dependencies
+        run: |
+          cd app/
+          pip install -r requirements.txt
+
+      - name: Run app tests
+        run: |
+          cd app
+          python -m pytest tests/
+
+  web-backend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+
+      - name: Install web backend dependencies
+        run: |
+          cd flitify-web/backend
+          pip install -r requirements.txt
+
+      - name: Check web backend startup
+        run: |
+          cd flitify-web/backend
+          python -m py_compile app.py
+
+  frontend:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install and build frontend
+        run: |
+          cd flitify-web/frontend
+          npm install
+          npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: [app, web-backend, frontend]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build full Docker setup
+        run: docker compose build
