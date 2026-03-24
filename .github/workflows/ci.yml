@@ -39,12 +39,12 @@ jobs:
 
       - name: Install web backend dependencies
         run: |
-          cd flitify-web/backend
+          cd flitify-webpanel/backend
           pip install -r requirements.txt
 
       - name: Check web backend startup
         run: |
-          cd flitify-web/backend
+          cd flitify-webpanel/backend
           python -m py_compile app.py
 
   frontend:
@@ -60,7 +60,7 @@ jobs:
 
       - name: Install and build frontend
         run: |
-          cd flitify-web/frontend
+          cd flitify-webpanel/frontend
           npm install
           npm run build
 
