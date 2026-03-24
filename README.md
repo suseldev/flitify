@@ -1,4 +1,6 @@
 # Flitify
+![CI](https://github.com/suseldev/flitify/actions/workflows/ci.yml/badge.svg)
+
 *Secure, modular remote computer management tool*
 
 **Flitify** is a secure and modular remote client management system, built around a custom encrypted TCP protocol. It features a modern React-based admin panel, Flask backend, and fully Dockerized deployment.
@@ -98,6 +100,10 @@ cp config_client_example.json config_client.json
 vi config_client.json
 python3 client_main.py
 ```
+
+## CI/CD
+The project includes a CI pipeline using GitHub Actions.
+
 ## Roadmap / TODO
 - [ ] Role-based access controls
 - [ ] Administrator user management panel
