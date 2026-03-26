@@ -10,6 +10,7 @@
 ## Features
 - **Custom encrypted protocol**
    - Built from scratch over TCP, using AES encryption, secure key exchange, and per-client authentication.
+   - ***Disclaimer:*** This project implements a custom protocol built on standard cryptographic primitives (AES and RSA). It is intended for educational use only and has not been formally audited for security.
 - **Modern API architecture**
     - Internal Flask API served via Waitress, secured by a secret token and isolated from public access. All requests are routed through a web backend proxy with user login and JWT-based session handling.
     -  Internal control layer is not exposed externally; only the proxy can interact with it.
