@@ -67,9 +67,10 @@ class FlitifyServer:
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.waitingClients = []
+        self.activeClients = {}
+        self.clientsLock = threading.Lock()
         self.watchdogThread = threading.Thread(target=self._clientsWatchdog, daemon=True, name='FlitifyServer-Watchdog')
         self.watchdogThread.start()
-        self.activeClients = {}
         self.logger = logging.getLogger('flitify')
     
     def getClientList(self) -> list:
@@ -112,8 +113,9 @@ class FlitifyServer:
             self.logger.info(f'{client_addr[0]}:{client_addr[1]}: Connection accepted')
             client_sock.settimeout(constants.SOCKET_TIMEOUT)
             try:
-                self.waitingClients.append(ClientThread(client_sock, client_addr, self.rsaKey, self.dbHandler))
-                self.waitingClients[-1].start()
+                with self.clientsLock:
+                    self.waitingClients.append(ClientThread(client_sock, client_addr, self.rsaKey, self.dbHandler))
+                    self.waitingClients[-1].start()
             except Exception as e:
                 self.logger.error(f'{client_addr[0]}:{client_addr[1]}: Uncaught exception while running ClientThread: {e}')
 
@@ -123,7 +125,8 @@ class FlitifyServer:
                 time.sleep(interval)
                 for client in list(self.waitingClients):
                     if not client.getClient():
-                        self.waitingClients.remove(client)
+                        with self.clientsLock:
+                            self.waitingClients.remove(client)
                         continue
                     connection = client.getClient().getConnection()
                     if connection.clientId:
@@ -132,22 +135,25 @@ class FlitifyServer:
                             connection.closeConnectionWithReason('You are a duplicate!')
                         else:
                             self.logger.debug(f'Watchdog: adding {client.getClient().getConnection().peerAddr} ({connection.clientId}) to activeClients')
-                            self.activeClients[connection.clientId] = client
-                        
+                            with self.clientsLock:
+                                self.activeClients[connection.clientId] = client
                         if client in self.waitingClients:
                             self.logger.debug(f'Watchdog: removing {client.getClient().getConnection().peerAddr} from waitingClients')
-                            self.waitingClients.remove(client)
+                            with self.clientsLock:
+                                self.waitingClients.remove(client)
                             continue
 
                     if not connection.running and client in self.waitingClients:
                         self.logger.debug(f'Watchdog: removing {client.getClient().getConnection().peerAddr} from waitingClients')
-                        self.waitingClients.remove(client)
+                        with self.clientsLock:
+                            self.waitingClients.remove(client)
 
                 for client_id in list(self.activeClients.keys()):
                     client = self.activeClients[client_id]
                     if not client.getClient().getConnection().running:
                         self.logger.debug(f'Watchdog: client {client.getClient().getConnection().peerAddr} ({client_id}) offline, removing from active clients')
-                        del self.activeClients[client_id]
+                        with self.clientsLock:
+                            del self.activeClients[client_id]
             except Exception as e:
                 self.logger.critical(f'Watchdog: uncaught exception: {e}')
                 raise

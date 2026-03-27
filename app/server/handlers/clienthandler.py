@@ -38,7 +38,7 @@ class ClientHandler():
             return True
         except InvalidResponseError as e:
             logging.warning(f'{self.connection.peerAddr} ({self.clientId}): Ping failed: {e}') 
-            self.closeConnectionWithReason('invalid_response')
+            self.connection.closeConnectionWithReason('invalid_response')
         except BrokenPipeError:
             logging.info(f'{self.connection.peerAddr} ({self.clientId}): Connection closed')
 
@@ -52,7 +52,7 @@ class ClientHandler():
             return resp_contents
         except InvalidResponseError as e:
             logging.warning('{self.connection.peerAddr} ({self.clientId}): get_status failed: {e}') 
-            self.closeConnectionWithReason('invalid_response')
+            self.connection.closeConnectionWithReason('invalid_response')
 
     @disable_timeout()
     def getFile(self, path: str):
