@@ -22,8 +22,8 @@ def run_server_with_socket(server_socket, rsa_key, server_ready_event):
     server_ready_event.set()
     client_sock, addr = server_socket.accept()
     conn = ServerSecureConnection(client_sock, addr, rsa_key)
-    conn.sendEncrypted(b"Hello from server!")
-    msg_from_client = conn.recvEncrypted(1024)
+    conn.sendEncryptedLarge(b"Hello from server!")
+    msg_from_client = conn.recvEncryptedLarge()
     assert msg_from_client == b"Hello from client!"
     conn.closeConnection()
 
@@ -34,10 +34,12 @@ def run_server_with_invalid_protocol(server_socket, rsa_key, server_ready_event)
     client_sock, addr = server_socket.accept()
     conn = client_sock
 
-    conn.send(b"FLITIFY_V213".ljust(32, b" "))
+    myMsg = b"FLITIFY_V213"
+    conn.send(len(myMsg).to_bytes(4, 'big'))
+    conn.send(myMsg)
     try:
         rsa = CryptoHelperRSA(rsa_key)
-        encKey = conn.recv(256)  # expected encrypted AES key size
+        encKey = conn.recvLarge()  # expected encrypted AES key size
         aes_key = rsa.decrypt(encKey)
         conn.close()
     except Exception:
@@ -56,9 +58,9 @@ def test_full_secure_connection_handshake(rsa_keys, server_socket):
     s = socket.socket()
     s.connect(("localhost", port))
     conn = ClientSecureConnection(s, ("localhost", port), rsa_public)
-    msg_from_server = conn.recvEncrypted(1024)
+    msg_from_server = conn.recvEncryptedLarge()
     assert msg_from_server == b"Hello from server!"
-    conn.sendEncrypted(b"Hello from client!")
+    conn.sendEncryptedLarge(b"Hello from client!")
     conn.closeConnection()
     s.close()
 

@@ -92,14 +92,14 @@ class ServerSecureConnection(SecureConnection):
         """ Refer to base class documentation. """
         try:
             protocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
-            self.sendRaw(protocolMsg.encode())
+            self.sendLarge(protocolMsg.encode())
             self.logger.debug(f'{self.peerAddr}: Greeting sent: {protocolMsg}')
-            encMsg = self.recvRaw(constants.MESSAGE_SIZE)
+            encMsg = self.recvLarge()
             aesKey = self.rsa.decrypt(encMsg)
             self.aes = cryptohelper.CryptoHelperAES(aesKey)
             self.logger.debug(f"{self.peerAddr}: AES key recieved")
-            self.sendEncrypted(b'HNDSHK_PING')
-            testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
+            self.sendEncryptedLarge(b'HNDSHK_PING')
+            testMsg = self.recvEncryptedLarge()
             if testMsg != b'HNDSHK_PONG':
                 raise ValueError(f'Incorrect handshake message: {testMsg}')
             self.logger.debug(f"{self.peerAddr}: Handshake finished")
@@ -128,7 +128,7 @@ class ClientSecureConnection(SecureConnection):
     def _performKeyExchange(self):
         """ Refer to base class documentation. """
         try:
-            protocolMsg = self.recvRaw(constants.MESSAGE_SIZE).decode()
+            protocolMsg = self.recvLarge().decode()
             self.logger.debug(f'{self.peerAddr}: Greeting recieved from server: {protocolMsg}')
             myProtocolMsg = 'FLITIFY_V' + constants.PROTOCOL_VERSION
             if protocolMsg != myProtocolMsg:
@@ -137,11 +137,11 @@ class ClientSecureConnection(SecureConnection):
             aesKey = self.aes.key
             encMsg = self.rsa.encrypt(aesKey)
             self.logger.debug(f"Sending AES key")
-            self.sendRaw(encMsg)
-            testMsg = self.recvEncrypted(constants.MESSAGE_SIZE)
+            self.sendLarge(encMsg)
+            testMsg = self.recvEncryptedLarge()
             if testMsg != b'HNDSHK_PING':
                 raise ValueError('Incorrect handshake message: {testMsg}')
-            self.sendEncrypted(b'HNDSHK_PONG')
+            self.sendEncryptedLarge(b'HNDSHK_PONG')
             self.logger.info(f"{self.peerAddr}: Client handshake finished")
         except ValueError as e:
             self.logger.error(f"{self.peerAddr}: Unexpected data format from server during handshake, closing connection: {e}")

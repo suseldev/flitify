@@ -101,21 +101,21 @@ class ServerProtocolConnection(ServerSecureConnection):
         if not self.running:
             return
         try:
-            self.sendEncrypted(b'AUTH_REQUIRED')
-            response = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
+            self.sendEncryptedLarge(b'AUTH_REQUIRED')
+            response = self.recvEncryptedLarge().decode()
             response = response.split(':')
             if len(response) != 2:
                 raise ValueError('Invalid data format')
             clientId = response[0]
             secret = response[1]
             if secret is None:
-                self.sendEncrypted(b'AUTH_INVALID')
+                self.sendEncryptedLarge(b'AUTH_INVALID')
                 raise AuthenticationError('secret not found for id: {clientId}')
             if secret != self.db.getSharedSecret(clientId):
-                self.sendEncrypted(b'AUTH_INVALID')
+                self.sendEncryptedLarge(b'AUTH_INVALID')
                 raise AuthenticationError('Incorrect secret or hostname')
             else:
-                self.sendEncrypted(b'AUTH_CORRECT')
+                self.sendEncryptedLarge(b'AUTH_CORRECT')
                 self.clientId = clientId
                 self.authenticated = True
                 self.logger.info(f'{self.peerAddr}: Authentication successful as {self.clientId}')
@@ -193,12 +193,12 @@ class ClientProtocolConnection(ClientSecureConnection):
         Performs the authentication handshake with the server.
         """
         try:
-            command = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
+            command = self.recvEncryptedLarge().decode()
             if command != 'AUTH_REQUIRED':
                 raise ValueError('Invalid auth prompt from server')
             authString = self.clientId + ':' + self.clientSecret
-            self.sendEncrypted(authString.encode())
-            response = self.recvEncrypted(constants.MESSAGE_SIZE).decode()
+            self.sendEncryptedLarge(authString.encode())
+            response = self.recvEncryptedLarge().decode()
             if response == 'AUTH_INVALID':
                 raise AuthenticationError('Incorrect secret or hostname')
             if response == 'AUTH_CORRECT':

@@ -77,7 +77,7 @@ class BaseConnection:
         size = int.from_bytes(size_bytes, 'big')
         data = b''
         while len(data) < size:
-            data += self.recvRaw(constants.MESSAGE_SIZE)
+            data += self.recvRaw(size - len(data))
         return data
 
     def sendLarge(self, data:bytes):
