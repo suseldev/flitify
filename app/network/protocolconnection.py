@@ -5,6 +5,7 @@ import logging
 import json
 import threading
 import socket
+import secrets
 
 class AuthenticationError(Exception):
     """
@@ -101,13 +102,19 @@ class ServerProtocolConnection(ServerSecureConnection):
         if not self.running:
             return
         try:
-            self.sendEncryptedLarge(b'AUTH_REQUIRED')
+            challenge = secrets.token_hex(16)
+            challengeStr = f'AUTH_REQUIRED:{challenge}'
+            self.sendEncryptedLarge(challengeStr.encode())
             response = self.recvEncryptedLarge().decode()
             response = response.split(':')
-            if len(response) != 2:
+            if len(response) != 3:
                 raise ValueError('Invalid data format')
             clientId = response[0]
             secret = response[1]
+            clientChallenge = response[2]
+            if challenge != clientChallenge:
+                self.sendEncryptedLarge(b'AUTH_INVALID')
+                raise AuthenticationError('Challenge verification failed!')
             if secret is None:
                 self.sendEncryptedLarge(b'AUTH_INVALID')
                 raise AuthenticationError('secret not found for id: {clientId}')
@@ -193,10 +200,13 @@ class ClientProtocolConnection(ClientSecureConnection):
         Performs the authentication handshake with the server.
         """
         try:
-            command = self.recvEncryptedLarge().decode()
-            if command != 'AUTH_REQUIRED':
+            command = self.recvEncryptedLarge().decode().split(':')
+            if(len(command) != 2):
+                raise ValueError('Invalid auth data format from the server')
+            if command[0] != 'AUTH_REQUIRED':
                 raise ValueError('Invalid auth prompt from server')
-            authString = self.clientId + ':' + self.clientSecret
+            challenge = command[1]
+            authString = self.clientId + ':' + self.clientSecret + ':' + challenge
             self.sendEncryptedLarge(authString.encode())
             response = self.recvEncryptedLarge().decode()
             if response == 'AUTH_INVALID':
