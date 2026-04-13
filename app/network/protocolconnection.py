@@ -36,6 +36,7 @@ class ServerProtocolConnection(ServerSecureConnection):
         self.sendLock = threading.Lock()
         self.authenticated = False
         self._beginHandshake()
+        self.currentSeq = 0
 
 
     def closeConnectionWithReason(self, reason):
@@ -71,20 +72,24 @@ class ServerProtocolConnection(ServerSecureConnection):
         Raises:
             ValueError: If the client reponse is malformed or invalid.
         """
+        self.currentSeq += 1
         with self.sendLock:
             payload = {
                     "type": actionType,
-                    "data": actionData
+                    "data": actionData,
+                    "seq": self.currentSeq
             }
             jsonPayload = json.dumps(payload).encode()
             self.sendEncryptedLarge(jsonPayload)
             try:
                 response = self.recvEncryptedLarge()
                 response = json.loads(response)
-                if 'type' not in response or 'data' not in response:
-                    raise ValueError("'type' or 'data' field not found in response")
+                if 'type' not in response or 'data' not in response or 'seq' not in response:
+                    raise ValueError("'type' or 'data' or 'seq' field not found in response")
                 if response['type'] == 'invalid_action':
                     raise ValueError("client sent 'invalid_action'")
+                if response['seq'] != self.currentSeq:
+                    raise ValueError(f"client sent incorrect seq. expected: {self.currentSeq}, received: {response['seq']}")
                 return response['type'], response['data']
             except json.JSONDecodeError:
                 self.logger.warning(f"{self.peerAddr} ({self.clientId}): client sent invalid json")
@@ -160,6 +165,7 @@ class ClientProtocolConnection(ClientSecureConnection):
         self.clientId = clientId
         self.clientSecret = clientSecret
         self._beginHandshake()
+        self.currentSeq = 0
 
     def recvAction(self):
         """
@@ -171,8 +177,11 @@ class ClientProtocolConnection(ClientSecureConnection):
         try:
             action = self.recvEncryptedLarge()
             action = json.loads(action)
-            if 'type' not in action or 'data' not in action:
-                raise ValueError("'type' or 'data' field not found in action")
+            if 'type' not in action or 'data' not in action or 'seq' not in action:
+                raise ValueError("'type' or 'data' or 'seq' field not found in action")
+            if action['seq'] != self.currentSeq + 1:
+                raise ValueError(f"out of order (expected {self.currentSeq + 1}, got {action['seq']}")
+            self.currentSeq = action['seq']
             return action['type'], action['data']
         except json.JSONDecodeError:
             self.logger.warning(f"{self.peerAddr} ({self.clientId}): Server sent invalid json")
@@ -190,7 +199,8 @@ class ClientProtocolConnection(ClientSecureConnection):
         """
         payload = {
                 "type": responseType,
-                "data": responseData
+                "data": responseData,
+                "seq": self.currentSeq
         }
         jsonPayload = json.dumps(payload).encode()
         self.sendEncryptedLarge(jsonPayload)
