@@ -110,13 +110,14 @@ def test_failed_authentication_invalid_format(rsa_keypair):
     client_sock.connect(('localhost', port))
 
     clientCon = ClientSecureConnection(client_sock, ('localhost', port), rsa_public_key)
-    auth_req = clientCon.recvEncryptedLarge()
-    assert auth_req == b'AUTH_REQUIRED'
+    auth_req = clientCon.recvEncryptedLarge().decode()
+    assert auth_req.split(':')[0] == 'AUTH_REQUIRED'
     invalid_data = 'client::'
     clientCon.sendEncryptedLarge(invalid_data.encode())
     with pytest.raises(BrokenPipeError):
         auth_resp = clientCon.recvEncryptedLarge()
         assert auth_resp == b'AUTH_INVALID'
+        next_resp = clientCon.recvEncryptedLarge()
 
     client_sock.close()
     server_sock.close()

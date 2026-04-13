@@ -131,7 +131,7 @@ class ServerProtocolConnection(ServerSecureConnection):
             self.closeConnection()
         except AuthenticationError as e:
             self.logger.warning(f'{self.peerAddr}: Authentication error: {e}')
-            self.closeConnectionWithReason(f'Authentication error: {e}')
+            self.closeConnection()
             raise
         except socket.timeout:
             self.logger.warning(f'{self.peerAddr}: Connection timed out during authentication')
